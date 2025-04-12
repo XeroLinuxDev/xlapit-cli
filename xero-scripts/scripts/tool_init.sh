@@ -5,14 +5,14 @@ set -e
 trap 'clear && exec "$0"' INT
 
 # Check if being run from xero-cli
-if [ -z "$AUR_HELPER" ]; then
-    echo
-    gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
-    echo
-    gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
-    echo
-    exit 1
-fi
+# if [ -z "$AUR_HELPER" ]; then
+#     echo
+#     gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
+#     echo
+#     gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
+#     echo
+#     exit 1
+# fi
 
 # Function to display the menu
 display_menu() {
@@ -66,7 +66,13 @@ install_pipewire_bluetooth() {
     echo
     sleep 2
 
-    sudo pacman -Rdd --noconfirm jack2
+    # Check if jack2 is installed
+    if pacman -Q jack2 &>/dev/null; then
+        gum style --foreground 6 "Removing jack2 package..."
+        sudo pacman -Rdd --noconfirm jack2
+    else
+        gum style --foreground 6 "jack2 package not found, skipping removal..."
+    fi
     echo
     
     gum style --foreground 6 "Installing audio packages..."
