@@ -185,7 +185,7 @@ package_selection_dialog() {
                             echo ".:: Importing DistroTube's Custom emacs Config ::."
                             echo
                             cd ~ && git clone https://github.com/xerolinux/eMacs-Config.git && cd eMacs-Config/ && cp -R emacs/ $HOME/.config
-                            rm -rf ~/emacs/
+                            rm -rf ~/emacs/ && rm -rf ~/emacs/eMacs-Config/
                             sleep 6
                             ;;
                         *)
