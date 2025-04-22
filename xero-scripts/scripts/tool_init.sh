@@ -216,42 +216,8 @@ install_lmstudio() {
 
 # Function to update system
 update_system() {
-  if ! command -v flatpak &> /dev/null; then
-    gum style --foreground 196 "Warning: flatpak is not installed"
-  fi
-  
-  echo "Select an update option:"Neovide
-  echo
-  echo "1) Simple (Arch packages only)"
-  echo "2) Extended (Arch, AUR, Flatpaks)"
-  echo "3) Advanced (All in one updater, Risky!)"
-  echo
-  echo "4) Return to previous menu."
-  echo
-  read -rp "Enter your choice: " choice
-
-  case $choice in
-    1)
-      sudo pacman -Syyu
-      ;;
-    2)
-      $AUR_HELPER -Syyu
-      flatpak update
-      ;;
-    3)
-      echo
-      gum style --foreground 196 "Warning: Using Topgrade can be destructive. Use at OWN RISK!"
-      sleep 6
-      echo
-      install_topgrade_aio_updater
-      ;;
-    4)
-      gum style --foreground 10 "Exiting..."
-      ;;
-    *)
-      gum style --foreground 9 "Invalid option. Please try again."
-      ;;
-  esac
+  sh /usr/local/bin/upd
+  clear && exec "$0"
 }
 
 restart() {
