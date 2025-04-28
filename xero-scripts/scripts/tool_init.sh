@@ -217,6 +217,7 @@ install_lmstudio() {
 # Function to update system
 update_system() {
   sh /usr/local/bin/upd
+  sleep 10
   clear && exec "$0"
 }
 
