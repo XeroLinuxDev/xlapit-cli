@@ -157,6 +157,7 @@ download_latest_arch_iso() {
 
     if [[ -z "$iso_file" ]]; then
         gum style --foreground 196 "Could not detect ISO filename. Check your connection or the mirror."
+        echo
         return 1
     fi
 
@@ -165,7 +166,7 @@ download_latest_arch_iso() {
     day=$(echo "$iso_file" | cut -d'-' -f2 | cut -d'.' -f3)
     month_name=$(date -d "$year-$month-$day" +%B)
 
-    # Handle ordinal suffix (1st, 2nd, 3rd, etc.)
+    # Ordinal suffix
     case "$day" in
         01|21|31) day_suffix="st" ;;
         02|22) day_suffix="nd" ;;
@@ -173,17 +174,41 @@ download_latest_arch_iso() {
         *) day_suffix="th" ;;
     esac
 
-    gum style --foreground 45 "Latest available ISO is $month_name ${day#0}${day_suffix} $year, downloading..."
-    sleep 3
-    echo
     mkdir -p "$download_dir"
-    curl -o "$download_dir/$iso_file" "${base_url}${iso_file}"
+
+    # Check if ISO already exists
+    if [[ -f "$download_dir/$iso_file" ]]; then
+        gum style --foreground 214 "Latest Arch ISO already exists, try again later..."
+        echo
+        return
+    fi
+
+    printf "\033[0;32mLatest available ISO is %s %s%s %s, download? [Y/n]: \033[0m" "$month_name" "${day#0}" "$day_suffix" "$year"
+    read confirm
+    confirm=${confirm,,}
+    confirm=${confirm:-y}
+
+    echo
+
+    if [[ "$confirm" != "y" ]]; then
+        gum style --foreground 214 "Download cancelled by user."
+        echo
+        return
+    fi
+
+    gum style --foreground 51 "Downloading..."
+    echo
+    sleep 1
+
+    curl --progress-bar -o "$download_dir/$iso_file" "${base_url}${iso_file}"
+
     echo
     if [[ $? -eq 0 ]]; then
-        gum style --foreground 46 "Download complete! You can find the ISO in : $download_dir"
-        sleep 10
+        gum style --foreground 46 "Download complete! You can find the ISO at : $download_dir"
+        echo
     else
         gum style --foreground 196 "Download failed."
+        echo
     fi
 }
 
