@@ -28,6 +28,7 @@ display_menu() {
   gum style --foreground 7 "3. Enable Multithreaded Compilation (Vanilla Arch)."
   gum style --foreground 7 "4. Install 3rd-Party GUI or TUI Package Manager(s)."
   echo
+  gum style --foreground 122 "i. Download latest (official) Arch Linux ISO."
   gum style --foreground 39 "a. Install Multi-A.I Model Chat G.U.I (Local/Offline)."
   gum style --foreground 212 "p. Change ParallelDownloads value for faster installs."
 }
@@ -147,6 +148,45 @@ enable_multithreaded_compilation() {
     exec "$0"
 }
 
+download_latest_arch_iso() {
+    local base_url="https://mirror.fra10.de.leaseweb.net/archlinux/iso/latest/"
+    local html iso_file year month day month_name day_suffix download_dir="$HOME/Downloads/ArchISO"
+
+    html=$(curl -s "$base_url")
+    iso_file=$(echo "$html" | grep -oP 'archlinux-\d{4}\.\d{2}\.\d{2}-x86_64\.iso' | head -n 1)
+
+    if [[ -z "$iso_file" ]]; then
+        gum style --foreground 196 "Could not detect ISO filename. Check your connection or the mirror."
+        return 1
+    fi
+
+    year=$(echo "$iso_file" | cut -d'-' -f2 | cut -d'.' -f1)
+    month=$(echo "$iso_file" | cut -d'-' -f2 | cut -d'.' -f2)
+    day=$(echo "$iso_file" | cut -d'-' -f2 | cut -d'.' -f3)
+    month_name=$(date -d "$year-$month-$day" +%B)
+
+    # Handle ordinal suffix (1st, 2nd, 3rd, etc.)
+    case "$day" in
+        01|21|31) day_suffix="st" ;;
+        02|22) day_suffix="nd" ;;
+        03|23) day_suffix="rd" ;;
+        *) day_suffix="th" ;;
+    esac
+
+    gum style --foreground 45 "Latest available ISO is $month_name ${day#0}${day_suffix} $year, downloading..."
+    sleep 3
+    echo
+    mkdir -p "$download_dir"
+    curl -o "$download_dir/$iso_file" "${base_url}${iso_file}"
+    echo
+    if [[ $? -eq 0 ]]; then
+        gum style --foreground 46 "Download complete! You can find the ISO in : $download_dir"
+        sleep 10
+    else
+        gum style --foreground 196 "Download failed."
+    fi
+}
+
 install_gui_package_managers() {
   gum style --foreground 7 "Installing 3rd-Party GUI Package Managers..."
   sleep 2
@@ -235,11 +275,11 @@ main() {
     echo
 
     case $CHOICE in
-      i) open_wiki ;;
       1) install_pipewire_bluetooth ;;
       2) activate_flathub_repositories ;;
       3) enable_multithreaded_compilation ;;
       4) install_gui_package_managers ;;
+      i) download_latest_arch_iso ;;
       a) install_lmstudio ;;
       u) update_system ;;
       p) parallel_downloads ;;
