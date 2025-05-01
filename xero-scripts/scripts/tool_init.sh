@@ -179,6 +179,7 @@ download_latest_arch_iso() {
     # Check if ISO already exists
     if [[ -f "$download_dir/$iso_file" ]]; then
         gum style --foreground 214 "Latest Arch ISO already exists, try again later..."
+        sleep 8
         echo
         return
     fi
@@ -192,6 +193,7 @@ download_latest_arch_iso() {
 
     if [[ "$confirm" != "y" ]]; then
         gum style --foreground 214 "Download cancelled by user."
+        sleep 3
         echo
         return
     fi
@@ -205,9 +207,11 @@ download_latest_arch_iso() {
     echo
     if [[ $? -eq 0 ]]; then
         gum style --foreground 46 "Download complete! You can find the ISO at : $download_dir"
+        sleep 10
         echo
     else
         gum style --foreground 196 "Download failed."
+        sleep 3
         echo
     fi
 }
