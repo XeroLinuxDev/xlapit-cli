@@ -10,7 +10,7 @@ First off let me say that everything this awesome toolkit provides is and will f
 
 <div align="center">
 
-## [.:: Follow the Wiki ::.](https://wiki.xerolinux.xyz/xlapit/)
+## [.:: Click to Follow the Wiki ::.](https://wiki.xerolinux.xyz/xlapit/)
 
 </div>
 

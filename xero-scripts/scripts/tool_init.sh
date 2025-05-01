@@ -19,7 +19,7 @@ display_menu() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "Initial System Setup"
   echo
-  gum style --foreground 141 "Hello $USER, please select an option. Press 'i' for the Wiki."
+  gum style --foreground 141 "Hello $USER, please select an option."
   echo
   gum style --foreground 46 "u. Update System (Simple/Extended/Adv.)."
   echo
@@ -28,17 +28,8 @@ display_menu() {
   gum style --foreground 7 "3. Enable Multithreaded Compilation (Vanilla Arch)."
   gum style --foreground 7 "4. Install 3rd-Party GUI or TUI Package Manager(s)."
   echo
-  gum style --foreground 208 "n. Apply latest XeroLinux specific changes/updates."
   gum style --foreground 39 "a. Install Multi-A.I Model Chat G.U.I (Local/Offline)."
   gum style --foreground 212 "p. Change ParallelDownloads value for faster installs."
-}
-
-# Function to open Wiki
-open_wiki() {
-  gum style --foreground 33 "Opening Wiki..."
-  sleep 3
-  xdg-open "https://wiki.xerolinux.xyz/xlapit/#system-setup" > /dev/null 2>&1
-  clear && exec "$0"
 }
 
 # Function to open Wiki
@@ -236,87 +227,6 @@ restart() {
   reboot
 }
 
-apply_latest_fixes() {
-    # Ask user to choose between Plasma and GNOME
-    local DE
-    if gum confirm --default=true --affirmative "Plasma" --negative "GNOME" "Please select Version:"; then
-        DE="Plasma"
-    else
-        DE="GNOME"
-    fi
-    
-    gum style \
-        --border normal \
-        --margin "1" \
-        --padding "1" \
-        --border-foreground 212 \
-        "Applying latest fixes for $DE..."
-
-    echo
-    sleep 3  # Initial pause
-
-    if [ "$DE" = "Plasma" ]; then
-        # Install/update desktop-config
-        gum style --foreground 212 "Updating XeroLinux specific packages..."
-        echo
-        # Check and install desktop-config if available
-        if pacman -Ss desktop-config > /dev/null 2>&1; then
-            sudo pacman -Syy --needed --noconfirm desktop-config || echo "Warning: Could not install desktop-config"
-        else
-            echo "Package desktop-config not found in repositories"
-        fi
-
-        # Try to remove packages if they exist
-        for pkg in file-roller xwaylandvideobridge; do
-            if pacman -Qi "$pkg" > /dev/null 2>&1; then
-                sudo pacman -Rdd --noconfirm "$pkg" || echo "Warning: Could not remove $pkg"
-            else
-                echo "Package $pkg is not installed"
-            fi
-        done
-        sleep 3
-        echo
-        # Copy apdatifier config
-        gum style --foreground 212 "Updating configuration files..."
-        echo
-        gum spin --spinner dot --title "Copying files..." -- \
-            cp -rf /etc/skel/.config/apdatifier/* "$HOME/.config/apdatifier/"
-        sleep 3
-
-        # Install additional packages
-        gum style --foreground 212 "Installing additional packages..."
-        echo
-        sudo pacman -S --noconfirm --needed pacseek ncdu nvtop ventoy-bin iftop amarok-qt6
-        sleep 3
-
-    elif [ "$DE" = "GNOME" ]; then
-        # Update desktop-config-gnome first
-        gum style --foreground 212 "Updating desktop-config-gnome package..."
-        echo
-        sudo pacman -Syy --needed --noconfirm desktop-config-gnome
-        sleep 3
-        echo
-        # Install new packages
-        gum style --foreground 212 "Installing additional packages..."
-        echo
-        sudo pacman -S --noconfirm --needed pacseek pwgen ncdu nvtop ventoy-bin iftop evolution-data-server gsound libgdata guake
-        guake --restore-preferences=/etc/skel/.config/guake-prefs.cfg
-        cp -rf /etc/skel/.config/autostart/guake.desktop "$HOME/.config/autostart/"
-        echo
-        echo "Done ! Please set keyboard shortcuts for guake-toggle."
-        sleep 3
-    fi
-
-    gum style \
-        --border normal \
-        --margin "1" \
-        --padding "1" \
-        --border-foreground 212 \
-        "✅ All updates have been applied successfully!"
-    
-    sleep 4  # Final pause
-}
-
 main() {
   while :; do
     display_menu
@@ -332,7 +242,6 @@ main() {
       4) install_gui_package_managers ;;
       a) install_lmstudio ;;
       u) update_system ;;
-      n) apply_latest_fixes ;;
       p) parallel_downloads ;;
       r) restart ;;
       q) clear && exec xero-cli -m ;;

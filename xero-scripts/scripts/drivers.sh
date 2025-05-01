@@ -23,7 +23,7 @@ display_header() {
     clear
     gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "Device Drivers"
     echo
-    gum style --foreground 141 "Hello $USER, please select what drivers to install. Press 'i' for the Wiki."
+    gum style --foreground 141 "Hello $USER, please select what drivers to install."
     echo
 }
 
@@ -168,13 +168,6 @@ process_choice() {
         read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
         echo
         case $CHOICE in
-            i)
-                gum style --foreground 33 "Opening Wiki..."
-                sleep 3
-                xdg-open "https://wiki.xerolinux.xyz/xlapit/#system-drivers" > /dev/null 2>&1
-                echo
-                clear && exec "$0"
-                ;;
             1)
                 prompt_user
                 sleep 3

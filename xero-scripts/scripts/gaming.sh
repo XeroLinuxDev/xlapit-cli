@@ -19,7 +19,7 @@ display_header() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "System Customization"
   echo
-  gum style --foreground 141 "Hello $USER, please select an option. Press 'i' for the Wiki."
+  gum style --foreground 141 "Hello $USER, please select an option."
   echo
 }
 check_dependency() {
@@ -133,12 +133,6 @@ process_choice() {
     echo
 
     case $CHOICE in
-      i)
-        gum style --foreground 33 "Opening Wiki..."
-        sleep 3
-        xdg-open "https://wiki.xerolinux.xyz/xlapit/#game-launchers" > /dev/null 2>&1
-        clear && exec "$0"
-        ;;
       1)
         gum style --foreground 7 "Installing Steam + Mangohud + Gamemode + Gamescope..."
         sleep 2

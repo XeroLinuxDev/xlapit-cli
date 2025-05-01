@@ -19,7 +19,7 @@ fi
 display_header() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "Essential Package Installer"
-  gum style --foreground 141 "Hello $USER, this is a curated list of packages. Press 'i' for the Wiki."
+  gum style --foreground 141 "Hello $USER, this is a curated list of packages."
   echo
 }
 
@@ -347,10 +347,6 @@ process_choice() {
     echo
 
     case $CHOICE in
-      i)
-        xdg-open "https://wiki.xerolinux.xyz/xlapit/#recommended-packages" > /dev/null 2>&1
-        clear && exec "$0"
-        ;;
       1)
         sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
         install_aur_packages ttf-gentium-basic hsqldb2-java libreoffice-extension-languagetool

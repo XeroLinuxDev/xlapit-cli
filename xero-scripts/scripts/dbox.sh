@@ -19,7 +19,7 @@ display_header() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "XeroLinux Distrobox/Docker/Podman Tool"
   echo
-  gum style --foreground 33 "Hello $USER, what would you like to do? Press 'i' for the Wiki."
+  gum style --foreground 33 "Hello $USER, what would you like to do ?"
   echo
 }
 
@@ -66,12 +66,6 @@ process_choice() {
     echo
 
     case $CHOICE in
-      i)
-        gum style --foreground 33 "Opening Wiki..."
-        sleep 3
-        xdg-open "https://wiki.xerolinux.xyz/xlapit/#distrobox-docker" > /dev/null 2>&1
-        clear && exec "$0"
-        ;;
       1)
         gum style --foreground 7 "Installing & Setting up Docker..."
         sleep 2
