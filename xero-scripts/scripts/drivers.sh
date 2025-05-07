@@ -78,7 +78,7 @@ prompt_user() {
                 sudo pacman -S --needed --noconfirm mesa lib32-mesa vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
                 ;;
             nvidia)
-                read -rp "Closed-Source (ALL) or Open-Kernel Modules (Turing+) ? (c/o): " nvidia_series
+                read -rp "Closed-Source (Most) or Open-Kernel Modules (Turing+) ? (c/o): " nvidia_series
                 if [[ $nvidia_series == "c" || $nvidia_series == "1000" ]]; then
                     sudo pacman -S --needed --noconfirm linux-headers nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
                 elif [[ $nvidia_series == "o" ]]; then

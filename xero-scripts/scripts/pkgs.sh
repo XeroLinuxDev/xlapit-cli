@@ -19,7 +19,7 @@ fi
 display_header() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "Essential Package Installer"
-  gum style --foreground 141 "Hello $USER, this is a curated list of packages."
+  gum style --foreground 141 "Hello $USER, this is a curated list of packages, for more use a package manager."
   echo
 }
 
@@ -221,10 +221,6 @@ package_selection_dialog() {
                     clear
                     install_pacman_packages godot
                     ;;
-                Unreal)
-                    clear
-                    install_aur_packages unreal-engine-bin
-                    ;;
                 MPV)
                     clear
                     install_pacman_packages mpv mpv-mpris
@@ -244,6 +240,10 @@ package_selection_dialog() {
                 JamesDSP)
                     clear
                     install_flatpak_packages me.timschneeberger.jdsp4linux
+                    ;;
+                qpwgraph)
+                    clear
+                    install_flatpak_packages org.rncbc.qpwgraph
                     ;;
                 Cider)
                     clear
@@ -394,8 +394,7 @@ process_choice() {
         "GiMP" "GNU Image Manipulation Program" OFF \
         "Krita" "Edit and paint images" OFF \
         "Blender" "A 3D graphics creation suite" OFF \
-        "GoDot" "Cross-platform 3D game engine" OFF \
-        "Unreal" "Advanced 3D Game-Engine" OFF
+        "GoDot" "Cross-platform 3D game engine" OFF
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
@@ -408,6 +407,7 @@ process_choice() {
         "Tenacity" "Telemetry-less Audio editing" OFF \
         "Strawberry" "A music player for collectors" OFF \
         "JamesDSP" "FOSS audio effect processor for Pipewire" OFF \
+        "qpwgraph" "A PipeWire Graph Qt GUI Interface" OFF \
         "Cider" "An open source Apple Music client" OFF
         echo
         gum style --foreground 7 "##########  Done ! ##########"

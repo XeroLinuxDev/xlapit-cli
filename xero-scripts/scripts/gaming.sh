@@ -45,7 +45,7 @@ install_aur_packages() {
 display_options() {
   gum style --foreground 40 ".::: Main (Chaotic-AUR) :::."
   echo
-  gum style --foreground 7 "1. Steam All-in-one."
+  gum style --foreground 7 "1. Steam + Tools."
   gum style --foreground 7 "2. Game Controllers."
   gum style --foreground 7 "3. LACT GPU-Overclock."
   echo

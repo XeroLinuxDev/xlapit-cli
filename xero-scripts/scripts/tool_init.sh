@@ -29,7 +29,7 @@ display_menu() {
   gum style --foreground 7 "4. Install 3rd-Party GUI or TUI Package Manager(s)."
   echo
   gum style --foreground 122 "i. Download latest (official) Arch Linux ISO."
-  gum style --foreground 39 "a. Install Multi-A.I Model Chat G.U.I (Local/Offline)."
+  gum style --foreground 39 "a. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
   gum style --foreground 212 "p. Change ParallelDownloads value for faster installs."
 }
 
