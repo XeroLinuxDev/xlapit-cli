@@ -249,9 +249,9 @@ package_selection_dialog() {
                     clear
                     install_flatpak_packages flathub sh.cider.Cider
                     ;;
-                Vesktop)
+                Equibop)
                     clear
-                    install_flatpak_packages dev.vencord.Vesktop
+                    install_flatpak_packages io.github.equicord.equibop
                     ;;
                 Ferdium)
                     clear
@@ -416,7 +416,7 @@ process_choice() {
         ;;
       6)
         package_selection_dialog "Select Social/Web Apps to install:" \
-        "Vesktop" "Discord alternative with Wayland support" OFF \
+        "Equibop" "Snappier Discord app with Equicord" OFF \
         "Ferdium" "Organize many web-apps into one" OFF \
         "Telegram" "Official Telegram Desktop client" OFF \
         "Tokodon" "A Mastodon client for Plasma" OFF \
