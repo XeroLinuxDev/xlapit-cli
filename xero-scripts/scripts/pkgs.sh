@@ -480,7 +480,7 @@ process_choice() {
         clear && exec "$0"
         ;;
       9)
-        sh sh $SCRIPTS/davinci.sh
+        sh $SCRIPTS/davinci.sh
         clear && exec "$0"
         ;;
       10)
