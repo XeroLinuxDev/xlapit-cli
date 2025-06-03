@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Check for figlet and install if missing
-if ! command -v figlet &> /dev/null; then
-    echo "Installing figlet for a better experience..."
-    sudo pacman -S --noconfirm figlet
+# Check for figlet and fuse2, install if missing
+if ! command -v figlet &> /dev/null || ! pacman -Q fuse2 &> /dev/null; then
+    echo "Installing figlet and fuse2 if missing..."
+    sudo pacman -S --noconfirm figlet fuse2
 fi
 
 clear
@@ -91,7 +91,7 @@ fi
 echo
 echo "Installing common dependencies..."
 sudo pacman -S --needed --noconfirm \
-    glu gtk2 libpng12 fuse2 opencl-driver \
+    glu gtk2 libpng12 opencl-driver \
     qt5-x11extras qt5-svg qt5-webengine qt5-websockets \
     qt5-quickcontrols2 qt5-multimedia libxcrypt-compat \
     xmlsec java-runtime ffmpeg4.4 gst-plugins-bad-libs \
