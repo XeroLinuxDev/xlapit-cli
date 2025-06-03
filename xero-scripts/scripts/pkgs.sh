@@ -480,7 +480,7 @@ process_choice() {
         clear && exec "$0"
         ;;
       9)
-        sh $SCRIPTS/davinci.sh
+        bash -c "$(curl -fsSL https://xerolinux.xyz/script/davinci.sh)"
         clear && exec "$0"
         ;;
       10)
