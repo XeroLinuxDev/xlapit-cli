@@ -4,6 +4,8 @@ set -e
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
+SCRIPTS="/usr/share/xero-scripts/"
+
 # Check if being run from xero-cli
 if [ -z "$AUR_HELPER" ]; then
     echo
@@ -13,7 +15,6 @@ if [ -z "$AUR_HELPER" ]; then
     echo
     exit 1
 fi
-
 
 # Function to display header
 display_header() {
@@ -33,7 +34,8 @@ display_options() {
   gum style --foreground 7 "6. Social & Chat Tools."
   gum style --foreground 7 "7. Virtualization Tools."
   gum style --foreground 7 "8. Video Tools & Software."
-  gum style --foreground 7 "9. System Tools (Vanilla Arch)."
+  gum style --foreground 7 "9. DaVinci Resolve (Free/Studio)."
+  gum style --foreground 7 "10. Various System Tools (Vanilla Arch)."
 }
 
 # Function to install packages using pacman
@@ -478,6 +480,10 @@ process_choice() {
         clear && exec "$0"
         ;;
       9)
+        sh sh $SCRIPTS/davinci.sh
+        clear && exec "$0"
+        ;;
+      10)
         gum style --foreground 7 "########## Installing Recommended Tools ##########"
         echo
         gum style --foreground 200 "Be patient while this installs the many recommended packages..."
