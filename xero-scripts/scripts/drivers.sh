@@ -31,11 +31,10 @@ display_header() {
 display_options() {
     gum style --foreground 85 "1. GPU Drivers (Intel/AMD/nVidia)."
     gum style --foreground 7 "2. Printer Drivers (Vanilla Arch)."
-    gum style --foreground 7 "3. Samba Sharing Tools (Vanilla Arch)."
-    gum style --foreground 7 "4. Scanner Drivers & Tools (Vanilla Arch)."
-    gum style --foreground 7 "5. Setup Tailscale Incl. fix for XeroLinux."
-    gum style --foreground 7 "6. DeckLink & StreamDeck Drivers/Tools (AUR)."
-    gum style --foreground 7 "7. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
+    gum style --foreground 7 "3. Scanner Drivers & Tools (Vanilla Arch)."
+    gum style --foreground 7 "4. Setup Tailscale Incl. fix for XeroLinux."
+    gum style --foreground 7 "5. DeckLink & StreamDeck Drivers/Tools (AUR)."
+    gum style --foreground 7 "6. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
     echo
     gum style --foreground 190 "g. Apply nVidia GSP Firmware Fix (Closed Drivers)."
     gum style --foreground 196 "k. Install Arch Kernel Manager Tool (XeroLinux Repo)."
@@ -192,21 +191,6 @@ process_choice() {
                 ;;
             3)
                 if grep -q "XeroLinux" /etc/os-release; then
-                    gum style --foreground 49 "Samba Tools are already pre-installed on XeroLinux !"
-                    sleep 5
-                else
-                    gum style --foreground 7 "Installing Samba Tools..."
-                    sleep 2
-                    echo
-                    sudo pacman -S --needed samba-support
-                    echo
-                    gum style --foreground 7 "Samba Tools installation complete!"
-                    sleep 3
-                fi
-                clear && exec "$0"
-                ;;
-            4)
-                if grep -q "XeroLinux" /etc/os-release; then
                     gum style --foreground 49 "Scanner Drivers are already pre-installed on XeroLinux !"
                     sleep 5
                 else
@@ -220,7 +204,7 @@ process_choice() {
                 fi
                 clear && exec "$0"
                 ;;
-            5)
+            4)
                 gum style --foreground 7 "Installing Tailscale..."
                 sleep 2
                 echo
@@ -230,7 +214,7 @@ process_choice() {
                 sleep 3
                 clear && exec "$0"
                 ;;
-            6)
+            5)
                 gum style --foreground 7 "Installing DeckLink & StreamDeck Drivers/Tools..."
                 sleep 2
                 echo
@@ -240,7 +224,7 @@ process_choice() {
                 sleep 3
                 clear && exec "$0"
                 ;;
-            7)
+            6)
                 gum style --foreground 7 "Installing ASUS ROG Laptop Drivers/Tools..."
                 sleep 2
                 echo
