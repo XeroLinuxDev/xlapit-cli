@@ -10,15 +10,11 @@ use fspp::*;
 use signal_hook::{consts::SIGINT, flag};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::path::Path;
 
 use script::*;
 use prompt::*;
 use command::run_command_silent;
-
-enum ExitCode {
-    Success,
-    Fail,
-}
 
 enum Script {
     SystemSetup,
@@ -28,7 +24,6 @@ enum Script {
     Customization,
     Service,
     Gaming,
-    Exit,
 }
 
 impl Script {
@@ -41,21 +36,14 @@ impl Script {
             Self::Gaming => "gaming",
             Self::RecommendedPackages => "pkgs",
             Self::Service => "service",
-            Self::Exit => "exit",
         }.to_string();
     }
 }
 
-fn main() {
-    match app() {
-        ExitCode::Success => (),
-        ExitCode::Fail => std::process::exit(1),
-    };
-}
-
-fn app() -> ExitCode {
+fn main() -> std::process::ExitCode {
+    // 🛠️ Register termination flag properly
     let term = Arc::new(AtomicBool::new(false));
-    flag::register(SIGINT, Arc::clone(&term)).expect("Failed to register SIGINT handler");
+    flag::register(SIGINT, Arc::clone(&term)).expect("Unable to register signal handler");
 
     // Parse CLI arguments.
     let args = cli::Cli::parse();
@@ -63,12 +51,12 @@ fn app() -> ExitCode {
     if args.minimal && args.verbose {
         piglog::fatal!("Are you trying to create an explosion or something? (Don't use --verbose and --minimal together!)");
 
-        return ExitCode::Fail;
+        return std::process::ExitCode::FAILURE;
     }
 
     // Check for termination signal
     if term.load(Ordering::Relaxed) {
-        return ExitCode::Success;
+        return std::process::ExitCode::SUCCESS;
     }
 
     std::env::set_var("CLEAR_TERMINAL", match args.do_not_clear { true => "0", false => "1" });
@@ -83,7 +71,7 @@ fn app() -> ExitCode {
                     cli::APICommand::BoolPrompt { text, fallback } => {
                         match bool_question(&text, fallback) {
                             true => (),
-                            false => return ExitCode::Fail,
+                            false => return std::process::ExitCode::FAILURE,
                         };
                     },
                     cli::APICommand::Echo { msg, mode } => {
@@ -94,28 +82,29 @@ fn app() -> ExitCode {
                     },
                 };
 
-                return ExitCode::Success;
+                return std::process::ExitCode::SUCCESS;
             },
         };
     }
 
-    let scripts = Path::new(&args.scripts_path.unwrap_or("/usr/share/xero-scripts".to_string()));
+    let scripts_path = args.scripts_path.unwrap_or("/usr/share/xero-scripts".to_string());
+    let scripts = Path::new(&scripts_path);
 
     if scripts.exists() == false {
-        piglog::fatal!("The directory ({}) containing all the scripts does not exist!", scripts.to_string().bright_red().bold());
+        piglog::fatal!("The directory ({}) containing all the scripts does not exist!", scripts.to_string_lossy().bright_red().bold());
 
-        return ExitCode::Fail;
+        return std::process::ExitCode::FAILURE;
     }
 
     // Export environment variable.
-    std::env::set_var("SCRIPTS_PATH", scripts.to_string());
+    std::env::set_var("SCRIPTS_PATH", scripts.to_string_lossy().to_string());
 
-    let os_release = match file::read(&Path::new("/etc/os-release")) {
+    let os_release = match file::read(&fspp::Path::new("/etc/os-release")) {
         Ok(o) => o,
         Err(e) => {
             eprintln!("Failed to read os-release file: {}", e);
 
-            return ExitCode::Fail;
+            return std::process::ExitCode::FAILURE;
         },
     };
 
@@ -139,7 +128,7 @@ fn app() -> ExitCode {
             piglog::fatal!("Not a valid distro! Please run on either vanilla Arch, or XeroLinux! (Found: {found})");
         }
 
-        return ExitCode::Fail;
+        return std::process::ExitCode::FAILURE;
     }
 
     // Options.
@@ -150,9 +139,7 @@ fn app() -> ExitCode {
         ("System Customization.", Script::Customization),
         ("Game Launchers/Tweaks.", Script::Gaming),
         ("Recommended System Packages.", Script::RecommendedPackages),
-        ("System Troubleshooting & Tweaks.", Script::Service),
-
-        ("Exit the toolkit. (If it doesn't just close the Window).", Script::Exit),
+        ("System Troubleshooting & More.", Script::Service),
     ];
 
     // ASCII logo.
@@ -199,15 +186,16 @@ fn app() -> ExitCode {
                 piglog::info!("AUR helper selected: {}", helper.bright_yellow().bold());
                 println!("         App Version: {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
                 println!("");
-                println!("Note: Options labeled with (Vanilla Arch) are not required on XeroLinux.");
             },
-            None => return ExitCode::Fail,
+            None => return std::process::ExitCode::FAILURE,
         };
 
         println!("Welcome, {username}! What would you like to do today?\n");
+        println!("Note: Options labeled with (Vanilla Arch) are not required on XeroLinux.");
+        println!("");
 
         for (i, j) in options.iter().enumerate() {
-            let prefix = if i == options.len() - 1 { "X" } else { &(i + 1).to_string() };
+            let prefix = &(i + 1).to_string();
             piglog::generic!("{} {} {}", prefix.bright_cyan().bold(), ":".bright_black().bold(), j.0.bright_green().bold());
             if i == options.len() - 2 {  // Add empty line before last option
                 println!("");  // Single newline before exit option
@@ -236,21 +224,15 @@ fn app() -> ExitCode {
                     piglog::error!("Number must be above 0!");
                     selected = None;
                 }
-                else if sel > options.len() - 1 {  // Subtract 1 to exclude Exit option from number selection
+                else if sel > options.len() {
                     piglog::error!("Number must not exceed the amount of options!");
                     selected = None;
                 }
             }
         }
 
-        // Converting selected to the index of the options array
         let selected: usize = selected.unwrap() - 1;
         let option = options.get(selected).unwrap();
-
-        // Don't try to run a script for the Exit option
-        if matches!(option.1, Script::Exit) {
-            return ExitCode::Success;
-        }
 
         user_run_script(&option.1.script_name());
         clear_terminal();
@@ -305,7 +287,6 @@ fn detect_aur_helper() -> Option<String> {
         }
     }
 
-    // Detect AUR helper.
     let aur_helpers = vec![
         "yay",
         "paru",
@@ -342,7 +323,7 @@ fn binary_exists(binary: &str) -> bool {
     let args = cli::Cli::parse();
 
     if let Ok(o) = std::env::var("PATH") {
-        let paths: Vec<Path> = o.trim().split(":").map(|x| Path::new(x)).collect();
+        let paths: Vec<&Path> = o.trim().split(":").map(|x| Path::new(x)).collect();
 
         if args.verbose {
             piglog::info!("Searching for binary: {}", binary.bright_yellow().bold());
@@ -350,14 +331,14 @@ fn binary_exists(binary: &str) -> bool {
 
         for i in paths.iter() {
             if args.verbose {
-                piglog::generic!("Searching in: {}", i.to_string().magenta());
+                piglog::generic!("Searching in: {}", i.to_string_lossy().magenta());
             }
 
-            let path = i.add_str(binary);
+            let path = i.join(binary);
 
             if path.exists() {
                 if args.minimal == false {
-                    piglog::success!("Found '{}' in: {}", binary.bright_yellow().bold(), i.to_string().bright_green());
+                    piglog::success!("Found '{}' in: {}", binary.bright_yellow().bold(), i.to_string_lossy().bright_green());
                 }
                 return true;
             }
