@@ -247,10 +247,6 @@ package_selection_dialog() {
                     clear
                     install_flatpak_packages org.rncbc.qpwgraph
                     ;;
-                Cider)
-                    clear
-                    install_flatpak_packages flathub sh.cider.Cider
-                    ;;
                 Equibop)
                     clear
                     install_flatpak_packages io.github.equicord.equibop
@@ -302,10 +298,6 @@ package_selection_dialog() {
                 KDEnLive)
                     clear
                     install_pacman_packages kdenlive
-                    ;;
-                DaVinci)
-                    clear
-                    install_aur_packages davinci-resolve
                     ;;
                 LosslessCut)
                     clear
@@ -383,7 +375,6 @@ process_choice() {
         "Github" "GitHub Desktop application" OFF \
         "VSCodium" "Telemetry-less code editing" OFF \
         "Meld" "Visual diff and merge tool" OFF \
-        "Cursor" "The AI Code Editor" OFF \
         "Warp" "The intelligent terminal with AI" OFF \
         "IntelliJ" "IntelliJ IDEA IDE for Java" OFF
         echo
@@ -409,8 +400,7 @@ process_choice() {
         "Tenacity" "Telemetry-less Audio editing" OFF \
         "Strawberry" "A music player for collectors" OFF \
         "JamesDSP" "FOSS audio effect processor for Pipewire" OFF \
-        "qpwgraph" "A PipeWire Graph Qt GUI Interface" OFF \
-        "Cider" "An open source Apple Music client" OFF
+        "qpwgraph" "A PipeWire Graph Qt GUI Interface" OFF
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
@@ -465,9 +455,8 @@ process_choice() {
         clear && exec "$0"
         ;;
       8)
-        package_selection_dialog "Select App(s) to install (DaVinci-Resolve will take a while to compile, don't interrupt the process):" \
+        package_selection_dialog "Select App(s) to install :" \
         "KDEnLive" "A non-linear video editor" OFF \
-        "DaVinci" "Professional A/V post-production Soft" OFF \
         "LosslessCut" "GUI tool for lossless trimming of videos" OFF \
         "OBS-Studio" "Includes many Plugins (Flatpak)" OFF \
         "Mystiq" "FFmpeg GUI front-end based on Qt5" OFF \

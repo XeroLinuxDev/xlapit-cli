@@ -31,13 +31,6 @@ display_options() {
   gum style --foreground 7 "2. Install Podman."
   gum style --foreground 7 "3. Install Distrobox."
   echo
-  gum style --foreground 200 "====== DistroBox Images ======"
-  echo
-  gum style --foreground 7 "4. Pull Latest Debian Image."
-  gum style --foreground 7 "5. Pull Latest Fedora Image."
-  gum style --foreground 7 "6. Pull Latest Tumbleweed Image."
-  echo
-  gum style --foreground 196 "u. Update all Containers (Might take a while)."
 }
 
 # Add this before process_choice function
@@ -124,45 +117,6 @@ process_choice() {
         flatpak install -y io.github.dvlv.boxbuddyrs
         echo
         gum style --foreground 7 "Distrobox installation complete!"
-        sleep 3
-        clear && exec "$0"
-        ;;
-      4)
-        gum style --foreground 7 "Pulling Latest Debian Image with label 'Debian'..."
-        sleep 2
-        echo
-        distrobox create -i quay.io/toolbx-images/debian-toolbox:latest -n "Debian" || handle_error
-        sleep 10
-        gum style --foreground 7 "Debian image pulled successfully!"
-        sleep 3
-        clear && exec "$0"
-        ;;
-      5)
-        gum style --foreground 7 "Pulling Latest Fedora Image with label 'Fedora'..."
-        sleep 2
-        echo
-        distrobox create -i registry.fedoraproject.org/fedora-toolbox:latest -n "Fedora" || handle_error
-        sleep 10
-        gum style --foreground 7 "Fedora image pulled successfully!"
-        sleep 3
-        clear && exec "$0"
-        ;;
-      6)
-        gum style --foreground 7 "Pulling Latest Tumbleweed Image with label 'OpenSuse'..."
-        sleep 2
-        echo
-        distrobox create -i registry.opensuse.org/opensuse/tumbleweed:latest -n "OpenSuse" || handle_error
-        sleep 10
-        gum style --foreground 7 "Tumbleweed image pulled successfully!"
-        sleep 3
-        clear && exec "$0"
-        ;;
-      u)
-        gum style --foreground 7 "Upgrading all Containers..."
-        sleep 2
-        echo
-        distrobox upgrade --all || handle_error
-        gum style --foreground 7 "All containers upgraded successfully!"
         sleep 3
         clear && exec "$0"
         ;;
