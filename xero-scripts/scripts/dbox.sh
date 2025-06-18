@@ -30,7 +30,6 @@ display_options() {
   gum style --foreground 7 "1. Install Docker."
   gum style --foreground 7 "2. Install Podman."
   gum style --foreground 7 "3. Install Distrobox."
-  echo
 }
 
 # Add this before process_choice function
