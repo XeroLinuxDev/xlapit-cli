@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 
-# Add this at the start of the script, right after the shebang
+# Trap INT signal to clear and restart the script
 trap 'clear && exec "$0"' INT
 
 # Check if being run from xero-cli
-trap 'clear && exec "$0"' INT
-
-# Check if being run from xero-cli
-if [ -z "$AUR_HELPER" ]; then
-    echo
-    gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
-    echo
-    gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
-    echo
-    exit 1
-fi
+# if [ -z "$AUR_HELPER" ]; then
+#     echo
+#     gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
+#     echo
+#     gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
+#     echo
+#     exit 1
+# fi
 
 SCRIPTS="/usr/share/xero-scripts/"
 
@@ -58,7 +55,7 @@ prompt_user() {
 
     if [[ $setup_type == "s" ]]; then
         while true; do
-            read -rp "Is your GPU AMD, Intel, or NVIDIA? (amd/intthat's why I added (Vanilla el/nvidia): " gpu_type
+            read -rp "Is your GPU AMD, Intel, or NVIDIA? (amd/intel/nvidia): " gpu_type
             gpu_type=$(echo "$gpu_type" | tr '[:upper:]' '[:lower:]')
             if [[ $gpu_type =~ ^(amd|intel|nvidia)$ ]]; then
                 break
@@ -86,23 +83,31 @@ prompt_user() {
                     echo "Invalid selection."
                     return
                 fi
-                # Check if modules are already present and add only missing ones
-                if ! grep -q "^MODULES=(.*nvidia.*nvidia_modeset.*nvidia_uvm.*nvidia_drm.*)" /etc/mkinitcpio.conf; then
-                    # First, ensure MODULES=( exists
-                    if ! grep -q "^MODULES=(" /etc/mkinitcpio.conf; then
-                        sudo sed -i '1i\MODULES=()' /etc/mkinitcpio.conf
+                # Grub stuff
+                if [ -f /etc/default/grub ]; then
+                    if ! grep -q "nvidia-drm.modeset=1" /etc/default/grub; then
+                        if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=".*"' /etc/default/grub; then
+                            sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/s/"$/ nvidia-drm.modeset=1"/' /etc/default/grub
+                        elif grep -q "^GRUB_CMDLINE_LINUX_DEFAULT='.*'" /etc/default/grub; then
+                            sudo sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/s/'$/ nvidia-drm.modeset=1'/" /etc/default/grub
+                        fi
                     fi
-                    # Add missing modules with proper spacing
-                    for module in nvidia nvidia_modeset nvidia_uvm nvidia_drm; do
-                        if ! grep -q "^MODULES=(.*${module}.*)" /etc/mkinitcpio.conf; then
-                            # Check if MODULES=() is empty
-                            if grep -q "^MODULES=()" /etc/mkinitcpio.conf; then
-                                # If empty, add without leading space
-                                sudo sed -i "/^MODULES=(/s/)$/${module}&/" /etc/mkinitcpio.conf
-                            else
-                                # If not empty, add with leading space
-                                sudo sed -i "/^MODULES=(/s/)$/ ${module}&/" /etc/mkinitcpio.conf
-                            fi
+                    echo "Updating Grub"
+                    grub-mkconfig -o /boot/grub/grub.cfg
+                fi
+                # MKINITCPIO crap
+                REQUIRED_MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+                # Read current MODULES line
+                current_line=$(grep '^MODULES=' /etc/mkinitcpio.conf)
+                if [[ "$current_line" =~ ^MODULES=\"\"$ ]]; then
+                    sudo sed -i 's/^MODULES=""/MODULES="nvidia nvidia_modeset nvidia_uvm nvidia_drm"/' /etc/mkinitcpio.conf
+                elif [[ "$current_line" =~ ^MODULES=\(\)$ ]]; then
+                    sudo sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
+                else
+                    for mod in "${REQUIRED_MODULES[@]}"; do
+                        if ! grep -q "$mod" /etc/mkinitcpio.conf; then
+                            sudo sed -i "/^MODULES=(/ s/)$/ $mod)/" /etc/mkinitcpio.conf
                         fi
                     done
                 fi
@@ -114,14 +119,10 @@ prompt_user() {
                     sudo pacman -S --needed --noconfirm cuda
                 fi
                 ;;
-            *)
-                echo "Invalid selection."
-                return
-                ;;
         esac
     else
         echo
-        sh $SCRIPTS/hybrid.sh
+        bash "$SCRIPTS/hybrid.sh"
         return
     fi
     echo
@@ -137,210 +138,141 @@ prompt_user() {
     sleep 6
 }
 
-# Function to install AUR packages
+# AUR installer
 install_aur_packages() {
-    if [[ -z "$AUR_HELPER" ]]; then
-        gum style --foreground 196 "Error: AUR helper not defined"
-        return 1
-    fi
-    if ! command -v "$AUR_HELPER" &> /dev/null; then
-        gum style --foreground 196 "Error: AUR helper ($AUR_HELPER) not found"
+    if [[ -z "$AUR_HELPER" || ! -x "$(command -v $AUR_HELPER)" ]]; then
+        gum style --foreground 196 "Error: AUR helper not defined or not found"
         return 1
     fi
     $AUR_HELPER -S --noconfirm --needed "$@"
 }
 
-# Function for package selection dialog
 package_selection_dialog() {
-    local options=$1
-    local install_command=$2
+    local options=$1 install_cmd=$2
     PACKAGES=$(gum choose --multiple --cursor.foreground 212 --selected.background 236 $options)
-    for PACKAGE in $PACKAGES; do
-        eval $install_command $PACKAGE
+    for pkg in $PACKAGES; do
+        eval "$install_cmd $pkg"
     done
 }
 
-# Function to process user choice
 process_choice() {
     while :; do
         echo
-        read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
-        echo
+        read -rp "Enter choice (1‑6), g, k, r, or q: " CHOICE
         case $CHOICE in
-            1)
-                prompt_user
-                sleep 3
-                clear && exec "$0"
-                ;;
+            1) prompt_user && sleep 3 && clear && exec "$0" ;;
             2)
                 if grep -q "XeroLinux" /etc/os-release; then
-                    gum style --foreground 49 "Printer Drivers are already pre-installed on XeroLinux !"
-                    sleep 5
+                    gum style --foreground 49 "Printer Drivers already installed!"
                 else
-                    gum style --foreground 7 "Installing Printer Drivers and Tools..."
-                    sleep 2
-                    echo
-                    sudo pacman -S --needed --noconfirm ghostscript gsfonts cups cups-filters cups-pdf system-config-printer avahi system-config-printer foomatic-db-engine foomatic-db foomatic-db-ppds foomatic-db-nonfree foomatic-db-nonfree-ppds gutenprint foomatic-db-gutenprint-ppds python-pyqt5
+                    gum style --foreground 7 "Installing Printer Drivers..."
+                    sudo pacman -S --needed --noconfirm ghostscript gsfonts cups cups-filters cups-pdf system-config-printer avahi foomatic-db-engine foomatic-db foomatic-db-ppds foomatic-db-nonfree foomatic-db-nonfree-ppds gutenprint python-pyqt5
                     sudo systemctl enable --now avahi-daemon cups.socket
-                    sudo groupadd lp && sudo groupadd cups && sudo usermod -aG sys,lp,cups "$(whoami)"
-                    echo
-                    gum style --foreground 7 "Printer Drivers and Tools installation complete!"
-                    sleep 3
+                    sudo usermod -aG sys,lp,cups "$(whoami)"
+                    gum style --foreground 7 "Printer setup complete!"
                 fi
-                clear && exec "$0"
+                sleep 3 && clear && exec "$0"
                 ;;
             3)
                 if grep -q "XeroLinux" /etc/os-release; then
-                    gum style --foreground 49 "Scanner Drivers are already pre-installed on XeroLinux !"
-                    sleep 5
+                    gum style --foreground 49 "Scanner Drivers already installed!"
                 else
                     gum style --foreground 7 "Installing Scanner Drivers..."
-                    sleep 2
-                    echo
-                    sudo pacman -S --noconfirm --needed scanner-support
-                    echo
-                    gum style --foreground 7 "Scanner Drivers installation complete!"
-                    sleep 3
+                    sudo pacman -S --needed --noconfirm scanner-support
+                    gum style --foreground 7 "Scanner setup complete!"
                 fi
-                clear && exec "$0"
+                sleep 3 && clear && exec "$0"
                 ;;
             4)
                 gum style --foreground 7 "Installing Tailscale..."
-                sleep 2
-                echo
                 bash -c "$(curl -fsSL https://raw.githubusercontent.com/xerolinux/xero-fixes/main/conf/install.sh)"
-                echo
-                gum style --foreground 7 "Tailscale installation complete!"
-                sleep 3
-                clear && exec "$0"
+                gum style --foreground 7 "Tailscale setup complete!"
+                sleep 3 && clear && exec "$0"
                 ;;
             5)
-                gum style --foreground 7 "Installing DeckLink & StreamDeck Drivers/Tools..."
-                sleep 2
-                echo
+                gum style --foreground 7 "Installing DeckLink & StreamDeck..."
                 package_selection_dialog "Decklink DeckMaster StreamDeckUI" "install_aur_packages"
-                echo
-                gum style --foreground 7 "DeckLink & StreamDeck Drivers/Tools installation complete!"
-                sleep 3
-                clear && exec "$0"
+                gum style --foreground 7 "Installation complete!"
+                sleep 3 && clear && exec "$0"
                 ;;
             6)
-                gum style --foreground 7 "Installing ASUS ROG Laptop Drivers/Tools..."
-                sleep 2
-                echo
+                gum style --foreground 7 "Installing ASUS ROG Tools..."
                 install_aur_packages rog-control-center asusctl supergfxctl
-                echo
-                echo "Enabling relevant services"
-                echo
                 sudo systemctl enable --now asusd supergfxd
-                echo
-                gum style --foreground 7 "Installation complete!"
-                sleep 3
-                clear && exec "$0"
+                gum style --foreground 7 "Setup complete!"
+                sleep 3 && clear && exec "$0"
                 ;;
             g)
-                gum style --foreground 7 "nVidia GSP Firmware Fix Management..."
-                echo
+                gum style --foreground 7 "Managing nVidia GSP fix..."
                 if pacman -Qq | grep -qE 'nvidia-dkms|nvidia-open-dkms'; then
                     if pacman -Qq | grep -q 'nvidia-open-dkms'; then
-                        read -p "Open Modules detected. This fix is only for closed drivers. Switch to closed drivers? (y/n): " response
-                        if [[ "$response" =~ ^[Yy]$ ]]; then
+                        read -rp "Open modules found. Switch to closed? (y/n): " resp
+                        if [[ $resp =~ ^[Yy]$ ]]; then
                             sudo pacman -Rdd --noconfirm nvidia-open-dkms
                             sudo pacman -S --noconfirm nvidia-dkms
                             echo -e "options nvidia-drm modeset=1 fbdev=1\noptions nvidia NVreg_EnableGpuFirmware=0" | sudo tee -a /etc/modprobe.d/nvidia-modeset.conf
                             sudo mkinitcpio -P
-                            echo
-                            gum style --foreground 33 "Closed drivers installed and GSP Firmware fix applied."
+                            gum style --foreground 33 "Closed drivers + GSP fix enabled."
                         else
-                            echo
-                            gum style --foreground 33 "No changes made."
+                            gum style --foreground 33 "No change made."
                         fi
                     else
-                        read -p "Choose: (1) Apply GSP fix (2) Remove fix (3) Switch to open drivers: " choice
+                        read -rp "Pick: 1) Apply GSP 2) Remove 3) Switch to open: " choice
                         case $choice in
                             1)
                                 echo -e "options nvidia-drm modeset=1 fbdev=1\noptions nvidia NVreg_EnableGpuFirmware=0" | sudo tee -a /etc/modprobe.d/nvidia-modeset.conf
                                 sudo mkinitcpio -P
-                                echo
-                                gum style --foreground 33 "GSP Firmware fix applied."
+                                gum style --foreground 33 "GSP fix applied."
                                 ;;
                             2)
-                                if [ -f "/etc/modprobe.d/nvidia-modeset.conf" ]; then
-                                    sudo rm /etc/modprobe.d/nvidia-modeset.conf
-                                    sudo mkinitcpio -P
-                                    echo
-                                    gum style --foreground 33 "GSP Firmware fix removed, keeping closed drivers."
-                                else
-                                    echo
-                                    gum style --foreground 33 "No GSP Firmware fix found to remove."
-                                fi
+                                sudo rm -f /etc/modprobe.d/nvidia-modeset.conf && sudo mkinitcpio -P
+                                gum style --foreground 33 "GSP fix removed."
                                 ;;
                             3)
-                                # Remove GSP firmware fix if exists
-                                if [ -f "/etc/modprobe.d/nvidia-modeset.conf" ]; then
-                                    sudo rm /etc/modprobe.d/nvidia-modeset.conf
-                                fi
-                                # Switch to open drivers
+                                sudo rm -f /etc/modprobe.d/nvidia-modeset.conf
                                 sudo pacman -Rdd --noconfirm nvidia-dkms
                                 sudo pacman -S --noconfirm nvidia-open-dkms
                                 sudo mkinitcpio -P
-                                echo
-                                gum style --foreground 33 "Reverted to open drivers and removed GSP Firmware fix."
+                                gum style --foreground 33 "Switched to open + fix removed."
                                 ;;
                             *)
-                                echo
-                                gum style --foreground 33 "No changes made."
+                                gum style --foreground 33 "No change."
                                 ;;
                         esac
                     fi
-                    echo
-                    read -p "Do you want to reboot now? (y/n): " reboot_response
-                    if [[ "$reboot_response" =~ ^[Yy]$ ]]; then
-                        reboot
-                    else
-                        echo
-                        gum style --foreground 33 "Remember to reboot for changes to take effect."
-                    fi
+                    read -rp "Reboot now? (y/n): " rb
+                    [[ $rb =~ ^[Yy]$ ]] && reboot
+                    gum style --foreground 33 "Remember to reboot."
                 else
-                    echo
-                    gum style --foreground 40 "No nVidia drivers installed, or you are using nouveau/Intel/AMD."
+                    gum style --foreground 40 "No nVidia closed driver installed."
                 fi
-                sleep 3
-                clear && exec "$0"
+                sleep 3 && clear && exec "$0"
                 ;;
             r)
-                gum style --foreground 33 "Rebooting System..."
-                sleep 3
+                gum style --foreground 33 "Rebooting in 5s..."
                 for i in {5..1}; do
-                    dialog --infobox "Rebooting in $i seconds..." 3 30
+                    echo "Rebooting in $i..."
                     sleep 1
                 done
                 reboot
-                sleep 3
                 ;;
             k)
                 gum style --foreground 7 "Installing Arch Kernel Manager..."
-                sleep 2
-                echo
-                sudo pacman -S --noconfirm --needed archlinux-kernel-manager python-tomlkit
-                echo
-                gum style --foreground 7 "Kernel Manager installation complete."
-                sleep 6
-                clear && exec "$0"
+                sudo pacman -S --needed --noconfirm archlinux-kernel-manager python-tomlkit
+                gum style --foreground 7 "Installation complete!"
+                sleep 3 && clear && exec "$0"
                 ;;
             q)
                 clear && exec xero-cli -m
                 ;;
             *)
-                gum style --foreground 50 "Invalid choice. Please select a valid option."
-                echo
+                gum style --foreground 50 "Invalid choice."
                 ;;
         esac
-        sleep 3
     done
 }
 
-# Main execution
+# Main
 display_header
 display_options
 process_choice
