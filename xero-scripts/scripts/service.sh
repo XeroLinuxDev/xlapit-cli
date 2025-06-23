@@ -26,7 +26,7 @@ display_menu() {
     gum style --foreground 7 "2. Clear Pacman Cache (Free Space)."
     gum style --foreground 7 "3. Unlock Pacman DB (In case of DB error)."
     gum style --foreground 7 "4. Activate v4l2loopback for OBS-VirtualCam."
-    gum style --foreground 7 "5. Change Autologin Session X11/Wayland (SDDM)."
+    gum style --foreground 7 "5. Install & Enable Plasma X11 Session (KDE)."
     gum style --foreground 7 "6. Disable Debug flag in MAKEPKG (Package Devs)."
     echo
     gum style --foreground 39 "a. Build Updated Arch ISO."
@@ -113,42 +113,16 @@ activate_v4l2loopback() {
     main
 }
 
-change_sddm_autologin() {
-    SDDM_CONF="/etc/sddm.conf.d/kde_settings.conf"
-
-    switch_session() {
+x11_session() {
         echo
-        echo "Which session do you want to switch to ?"
+        echo "Activating X11 Session..."
         echo
-        echo "1) Wayland"
-        echo "2) Xorg (X11)"
+        sudo pacman -S --noconfirm kwin-x11 plasma-x11-session
         echo
-        read -rp "Enter your choice [1 or 2]: " choice
-
-        case $choice in
-            1)
-                echo "Switching to Wayland..."
-                sudo sed -i 's|Session=plasmax11|Session=plasma|' "$SDDM_CONF"
-                echo "Session switched to Wayland."
-                ;;
-            2)
-                echo "Switching to Xorg (X11)..."
-                sudo sed -i 's|Session=plasma|Session=plasmax11|' "$SDDM_CONF"
-                echo "Session switched to Xorg (X11)."
-                ;;
-            *)
-                echo "Invalid choice. Please enter 1 or 2."
-                switch_session
-                ;;
-        esac
-
         echo "Please reboot to apply..."
         sleep 6
         main
     }
-
-    switch_session
-}
 
 build_archiso() {
     echo
@@ -306,7 +280,7 @@ main() {
            2) clear_pacman_cache ;;
            3) unlock_pacman_db ;;
            4) activate_v4l2loopback ;;
-           5) change_sddm_autologin ;;
+           5) x11_session ;;
            6) disable_debug ;;
            a) build_archiso ;;
            s) reset_everything ;;
