@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-set -e
+
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
 
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
@@ -13,6 +18,9 @@ if [ -z "$AUR_HELPER" ]; then
     echo
     exit 1
 fi
+
+# Source common functions
+source "$(dirname "$0")/common.sh"
 
 # Function to display the menu
 display_menu() {
@@ -299,13 +307,11 @@ restart() {
   sleep 3
 
   # Countdown from 5 to 1
-  for i in {5..1}; do
-    dialog --infobox "Rebooting in $i seconds..." 3 30
-    sleep 1
-  done
-
-  # Execute the reboot command
-  reboot
+  if confirm_prompt "Do you want to reboot now?"; then
+    reboot
+  else
+    echo "Please reboot your system to apply the changes."
+  fi
 }
 
 main() {

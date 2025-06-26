@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
+
 # Trap INT signal to clear and restart the script
 trap 'clear && exec "$0"' INT
 
@@ -64,16 +70,16 @@ prompt_user() {
         done
         case $gpu_type in
             amd)
-                sudo -K
                 sudo pacman -S --needed --noconfirm vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk
-                sudo -K
                 read -rp "Will you be using DaVinci Resolve and/or Machine Learning? (y/n): " davinci
                 if [[ $davinci =~ ^[Yy](es)?$ ]]; then
                     sudo pacman -S --needed --noconfirm mesa lib32-mesa rocm-opencl-runtime rocm-hip-runtime
                 fi
+                sudo -K
                 ;;
             intel)
                 sudo pacman -S --needed --noconfirm vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
+                sudo -K
                 ;;
             nvidia)
                 read -rp "Closed-Source (Most) or Open-Kernel Modules (Turing+) ? (c/o): " nvidia_series
@@ -85,41 +91,19 @@ prompt_user() {
                     echo "Invalid selection."
                     return
                 fi
-                # Grub stuff
-                if [ -f /etc/default/grub ]; then
-                    if ! grep -q "nvidia-drm.modeset=1" /etc/default/grub; then
-                        if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=".*"' /etc/default/grub; then
-                            sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=/s/"$/ nvidia-drm.modeset=1"/' /etc/default/grub
-                        elif grep -q "^GRUB_CMDLINE_LINUX_DEFAULT='.*'" /etc/default/grub; then
-                            sudo sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/s/'$/ nvidia-drm.modeset=1'/" /etc/default/grub
-                        fi
-                    fi
-                    echo "Updating Grub"
-                    grub-mkconfig -o /boot/grub/grub.cfg
-                fi
-                # MKINITCPIO crap
-                REQUIRED_MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
-
-                # Read current MODULES line
-                current_line=$(grep '^MODULES=' /etc/mkinitcpio.conf)
-                if [[ "$current_line" =~ ^MODULES=\"\"$ ]]; then
-                    sudo sed -i 's/^MODULES=""/MODULES="nvidia nvidia_modeset nvidia_uvm nvidia_drm"/' /etc/mkinitcpio.conf
-                elif [[ "$current_line" =~ ^MODULES=\(\)$ ]]; then
-                    sudo sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
-                else
-                    for mod in "${REQUIRED_MODULES[@]}"; do
-                        if ! grep -q "$mod" /etc/mkinitcpio.conf; then
-                            sudo sed -i "/^MODULES=(/ s/)$/ $mod)/" /etc/mkinitcpio.conf
-                        fi
-                    done
-                fi
+                # Robustly update mkinitcpio and grub for nvidia
+                add_nvidia_to_mkinitcpio
+                add_nvidia_to_grub
+                sudo -K
                 sudo systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
                 sudo mkinitcpio -P
+                sudo -K
                 echo
                 read -rp "Do you want to install CUDA for Machine Learning? (y/n): " cuda
                 if [[ $cuda =~ ^[Yy](es)?$ ]]; then
                     sudo pacman -S --needed --noconfirm cuda
                 fi
+                sudo -K
                 ;;
         esac
     else
@@ -272,6 +256,28 @@ process_choice() {
                 ;;
         esac
     done
+}
+
+# Robustly add nvidia modules to mkinitcpio.conf
+add_nvidia_to_mkinitcpio() {
+  local conf="/etc/mkinitcpio.conf"
+  local required="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+  # Remove any existing nvidia modules to avoid duplicates
+  sudo sed -i 's/\\b\(nvidia\\|nvidia_modeset\\|nvidia_uvm\\|nvidia_drm\)\\b//g' "$conf"
+  # Clean up extra spaces
+  sudo sed -i 's/MODULES=( */MODULES=(/; s/  */ /g; s/ )/)/' "$conf"
+  # Add required modules
+  sudo sed -i "s/^MODULES=(/MODULES=($required /" "$conf"
+}
+
+# Robustly add nvidia-drm.modeset=1 to GRUB
+add_nvidia_to_grub() {
+  local grub="/etc/default/grub"
+  if ! grep -q 'nvidia-drm.modeset=1' "$grub"; then
+    sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 nvidia-drm.modeset=1"/' "$grub"
+    sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT='\(.*\)'/GRUB_CMDLINE_LINUX_DEFAULT='\1 nvidia-drm.modeset=1'/" "$grub"
+  fi
+  sudo grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 # Main

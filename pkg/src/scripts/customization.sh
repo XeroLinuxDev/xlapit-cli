@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-set -e
+
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
 
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
@@ -68,9 +73,7 @@ process_choice() {
         sleep 2
         echo
         if ! command -v fastfetch &> /dev/null; then
-          sudo -K
           sudo pacman -S --noconfirm --needed fastfetch imagemagick ffmpeg ffmpegthumbnailer ffmpegthumbs qt6-multimedia-ffmpeg
-          sudo -K
         fi
         
         # Create config directory if it doesn't exist
@@ -183,9 +186,7 @@ process_choice() {
         echo
         # Check if zsh is already installed
         if ! command -v zsh &> /dev/null; then
-          sudo -K
           sudo pacman -S --needed --noconfirm zsh grml-zsh-config fastfetch
-          sudo -K
         fi
         
         # Check if oh-my-zsh is already installed
@@ -225,6 +226,7 @@ process_choice() {
         gum style --foreground 7 "ZSH setup complete! Log out and back in."
         sleep 3
         clear && exec "$0"
+        sudo -K
         ;;
       a)
         gum style --foreground 7 "Applying Adwaita GTK2 Patch..."
@@ -264,14 +266,11 @@ process_choice() {
         gum style --foreground 200 "XeroLinux KDE Rice setup complete!"
         sleep 3
         # Countdown from 15 to 1
-        for i in {15..1}; do
-            dialog --infobox "Rebooting in $i seconds..." 3 30
-            sleep 1
-        done
-
-        # Reboot after the countdown
-        reboot
-        sleep 3
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       w)
         gum style --foreground 7 "Downloading Extra KDE Wallpapers..."
@@ -282,6 +281,7 @@ process_choice() {
         gum style --foreground 7 "All done, enjoy !"
         sleep 3
         clear && exec "$0"
+        sudo -K
         ;;
       u)
         gum style --foreground 200 "Applying Layan GTK4 Patch/Updating..."
@@ -331,19 +331,17 @@ process_choice() {
         gum style --foreground 7 "Settings applied, please reboot..."
         sleep 3
         clear && exec "$0"
+        sudo -K
         ;;
       r)
         gum style --foreground 33 "Rebooting System..."
         sleep 3
         # Countdown from 5 to 1
-        for i in {5..1}; do
-            dialog --infobox "Rebooting in $i seconds..." 3 30
-            sleep 1
-        done
-
-        # Reboot after the countdown
-        reboot
-        sleep 3
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       q)
         if command -v xero-cli &> /dev/null; then

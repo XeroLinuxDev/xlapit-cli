@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
+
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
@@ -104,9 +110,7 @@ package_selection_dialog() {
 install_gaming_packages() {
   case $1 in
     steam)
-      sudo -K
       install_aur_packages steam steam-native-runtime lib32-pipewire-jack gamemode gamescope mangohud mangoverlay lib32-mangohud wine-meta wine-nine ttf-liberation lib32-fontconfig wqy-zenhei vkd3d giflib lib32-giflib libpng lib32-libpng libldap lib32-libldap gnutls lib32-gnutls mpg123 lib32-mpg123 openal lib32-openal v4l-utils lib32-v4l-utils libpulse lib32-libpulse libgpg-error lib32-libgpg-error alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo lib32-libjpeg-turbo sqlite lib32-sqlite libxcomposite lib32-libxcomposite libxinerama lib32-libgcrypt libgcrypt lib32-libxinerama ncurses lib32-ncurses ocl-icd lib32-ocl-icd libxslt lib32-libxslt libva lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader cups dosbox lib32-opencl-icd-loader lib32-vkd3d opencl-icd-loader wine-meta
-      sudo -K
       ;;
     bottles)
       flatpak install -y com.usebottles.bottles org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/24.08
@@ -152,7 +156,7 @@ process_choice() {
         echo "Patching VM.Max.MapCount"
         echo
         echo "vm.max_map_count=2147483642" | sudo tee /etc/sysctl.d/99-sysctl.conf >/dev/null
-        sleep 3
+        sudo -K
         gum style --foreground 7 "Steam installation complete!"
         sleep 3
         clear && exec "$0"

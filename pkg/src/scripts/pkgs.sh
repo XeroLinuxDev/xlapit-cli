@@ -7,14 +7,14 @@ trap 'clear && exec "$0"' INT
 SCRIPTS="/usr/share/xero-scripts/"
 
 # Check if being run from xero-cli
-if [ -z "$AUR_HELPER" ]; then
-    echo
-    gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
-    echo
-    gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
-    echo
-    exit 1
-fi
+# if [ -z "$AUR_HELPER" ]; then
+#     echo
+#     gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
+#     echo
+#     gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
+#     echo
+#     exit 1
+# fi
 
 # Function to display header
 display_header() {
@@ -40,9 +40,7 @@ display_options() {
 
 # Function to install packages using pacman
 install_pacman_packages() {
-    sudo -K
     sudo pacman -S --noconfirm --needed "$@"
-    sudo -K
 }
 
 # Function to install packages using AUR Helper
@@ -73,18 +71,7 @@ package_selection_dialog() {
     local title=$1
     shift
     local options=("$@")
-    # Build a list of just the package names for gum choose
-    local pkg_names=()
-    for ((i=0; i<${#options[@]}; i+=3)); do
-        pkg_names+=("${options[i]}")
-    done
-    clear
-    echo
-    echo
-    echo -e "\e[36m[Space]\e[0m to select, \e[32m[Enter]\e[0m to make it so"
-    echo
-    # Use gum choose for menu-style multi-select
-    PACKAGES=$(printf "%s\n" "${pkg_names[@]}" | gum choose --no-limit --header "$title" --cursor.foreground 212 --selected.background 236) || true
+    PACKAGES=$(dialog --checklist "$title" 18 80 10 "${options[@]}" 3>&1 1>&2 2>&3) || true
 
     if [ -n "$PACKAGES" ]; then
         PKG_DIALOG_EXITED=0
@@ -143,13 +130,13 @@ package_selection_dialog() {
                             backup_date=$(date '+%Y-%m-%d-%H')
                             echo
                             echo "Backing up existing nVim config..."
-
+                            
                             # Backup existing folders with date suffix
                             [ -d "$HOME/.config/nvim" ] && mv "$HOME/.config/nvim" "$HOME/.config/nvim.bk-$backup_date"
                             [ -d "$HOME/.local/share/nvim" ] && mv "$HOME/.local/share/nvim" "$HOME/.local/share/nvim.bk-$backup_date"
                             [ -d "$HOME/.local/state/nvim" ] && mv "$HOME/.local/state/nvim" "$HOME/.local/state/nvim.bk-$backup_date"
                             [ -d "$HOME/.cache/nvim" ] && mv "$HOME/.cache/nvim" "$HOME/.cache/nvim.bk-$backup_date"
-
+                            
                             echo
                             gum style --foreground 212 ".:: Importing Xero/Drew Custom nVim Config ::."
                             echo
@@ -513,7 +500,11 @@ process_choice() {
           sleep 3
           clear && exec "$0"
         else
-          package_selection_dialog "Select Virtualization System to install:" "${virt_options[@]}"
+          PACKAGES=$(dialog --checklist "Select Virtualization System:" 10 50 2 \
+            "VirtManager" "QEMU virtual machines" OFF \
+            "VirtualBox" "x86 virtualization" OFF \
+            3>&1 1>&2 2>&3) || true
+
           if [ -n "$PACKAGES" ]; then
             for PACKAGE in $PACKAGES; do
               case $PACKAGE in
@@ -537,11 +528,9 @@ process_choice() {
             done
           fi
         fi
-        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
-          echo
-          gum style --foreground 7 "########## Done! Please Reboot. ##########"
-          sleep 3
-        fi
+        echo
+        gum style --foreground 7 "########## Done! Please Reboot. ##########"
+        sleep 3
         clear && exec "$0"
         ;;
       8)

@@ -1,0 +1,17 @@
+utodo = [
+    2,
+    0,
+    0,
+]
+
+[pending]
+items = [
+    "A system for self updating.",
+    "Refactor options. (DarkXero's DMs)",
+]
+
+[progress]
+items = []
+
+[finished]
+items = []

@@ -27,7 +27,6 @@ check_current_driver() {
 # Function to install NVIDIA and Intel drivers
 install_nvidia_intel() {
     local driver_type=$1
-    sudo -K
     if [ "$driver_type" = "closed" ]; then
         sudo pacman -S --needed --noconfirm linux-headers nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     else
@@ -53,7 +52,6 @@ install_nvidia_intel() {
 # Function to install NVIDIA and AMD drivers
 install_nvidia_amd() {
     local driver_type=$1
-    sudo -K
     if [ "$driver_type" = "closed" ]; then
         sudo pacman -S --needed --noconfirm linux-headers nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     else
