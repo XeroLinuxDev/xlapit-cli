@@ -193,6 +193,8 @@ fn main() -> std::process::ExitCode {
         println!("Welcome, {username}! What would you like to do today?\n");
         println!("Note: Options labeled with (Vanilla Arch) are not required on XeroLinux.");
         println!("");
+        println!("Credit : ToneKneeo for code cleanup / SMOKΞ Foir testing.");
+        println!("");
 
         for (i, j) in options.iter().enumerate() {
             let prefix = &(i + 1).to_string();
@@ -206,7 +208,7 @@ fn main() -> std::process::ExitCode {
         // Modified selection handling
         let mut selected: Option<usize> = None;
         while selected == None {
-            let answer = prompt("Please select option (by number or Close Window to exit).");
+            let answer = prompt("Please select option (Close Window to exit).");
             let answer = answer.trim();
 
             if answer.eq_ignore_ascii_case("x") {

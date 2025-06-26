@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-
-# Source common functions
-source "$(dirname "$0")/common.sh"
-
-# Check for root and clear sudo cache before AUR operations
-check_root_and_clear_cache
+set -e
 
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
@@ -12,14 +7,14 @@ trap 'clear && exec "$0"' INT
 SCRIPTS="/usr/share/xero-scripts/"
 
 # Check if being run from xero-cli
-if [ -z "$AUR_HELPER" ]; then
-    echo
-    gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
-    echo
-    gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
-    echo
-    exit 1
-fi
+# if [ -z "$AUR_HELPER" ]; then
+#     echo
+#     gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
+#     echo
+#     gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
+#     echo
+#     exit 1
+# fi
 
 # Function to display header
 display_header() {
@@ -58,6 +53,19 @@ install_flatpak_packages() {
     flatpak install -y "$@"
 }
 
+# Helper functions to check if a package is installed
+is_pacman_installed() {
+    pacman -Q "$1" &>/dev/null
+}
+
+is_aur_installed() {
+    pacman -Qm "$1" &>/dev/null
+}
+
+is_flatpak_installed() {
+    flatpak list --app --columns=application | grep -wq "^$1$"
+}
+
 # Function to display package selection dialog
 package_selection_dialog() {
     local title=$1
@@ -66,57 +74,48 @@ package_selection_dialog() {
     PACKAGES=$(dialog --checklist "$title" 18 80 10 "${options[@]}" 3>&1 1>&2 2>&3) || true
 
     if [ -n "$PACKAGES" ]; then
+        PKG_DIALOG_EXITED=0
         for PACKAGE in $PACKAGES; do
             case $PACKAGE in
                 Brave)
                     clear
                     install_aur_packages brave-bin
-                    sudo -K
                     ;;
                 Firefox)
                     clear
                     install_pacman_packages firefox firefox-ublock-origin
-                    sudo -K
                     ;;
                 Filezilla)
                     clear
                     install_flatpak_packages org.filezillaproject.Filezilla
-                    sudo -K
                     ;;
                 Vivaldi)
                     clear
                     install_flatpak_packages com.vivaldi.Vivaldi
-                    sudo -K
                     ;;
                 Mullvad)
                     clear
                     install_aur_packages mullvad-browser-bin
-                    sudo -K
                     ;;
                 Floorp)
                     clear
                     install_flatpak_packages flathub one.ablaze.floorp
-                    sudo -K
                     ;;
                 LibreWolf)
                     clear
                     install_flatpak_packages io.gitlab.librewolf-community
-                    sudo -K
                     ;;
                 Chromium)
                     clear
                     install_flatpak_packages com.github.Eloston.UngoogledChromium
-                    sudo -K
                     ;;
                 Tor)
                     clear
                     install_flatpak_packages org.torproject.torbrowser-launcher
-                    sudo -K
                     ;;
                 AndroidStudio)
                     clear
                     install_flatpak_packages com.google.AndroidStudio
-                    sudo -K
                     ;;
                 neoVide)
                     clear
@@ -162,32 +161,26 @@ package_selection_dialog() {
                         rm -rf ~/.config/nvim/.git
                     fi
                     sleep 6
-                    sudo -K
                     ;;
                 Hugo)
                     clear
                     install_pacman_packages hugo
-                    sudo -K
                     ;;
                 Github)
                     clear
                     install_flatpak_packages io.github.shiftey.Desktop
-                    sudo -K
                     ;;
                 VSCodium)
                     clear
                     install_aur_packages vscodium-bin vscodium-bin-marketplace vscodium-bin-features
-                    sudo -K
                     ;;
                 Meld)
                     clear
                     install_pacman_packages meld
-                    sudo -K
                     ;;
                 Cursor)
                     clear
                     install_aur_packages cursor-extracted
-                    sudo -K
                     ;;
                 Emacs)
                     clear
@@ -201,7 +194,6 @@ package_selection_dialog() {
                     case $emacs_choice in
                         1)
                             install_pacman_packages emacs ttf-ubuntu-font-family ttf-jetbrains-mono-nerd ttf-jetbrains-mono
-                            sudo -K
                             ;;
                         2)
                             install_pacman_packages emacs ttf-ubuntu-font-family ttf-jetbrains-mono-nerd ttf-jetbrains-mono
@@ -211,7 +203,6 @@ package_selection_dialog() {
                             cd ~ && git clone https://github.com/xerolinux/eMacs-Config.git && cd eMacs-Config/ && cp -R emacs/ $HOME/.config
                             rm -rf ~/emacs/ && rm -rf ~/emacs/eMacs-Config/
                             sleep 6
-                            sudo -K
                             ;;
                         *)
                             echo "Invalid choice. Returning to menu."
@@ -221,107 +212,86 @@ package_selection_dialog() {
                 LazyGit)
                     clear
                     install_pacman_packages lazygit
-                    sudo -K
                     ;;
                 Warp)
                     clear
                     install_aur_packages warp-terminal-bin
-                    sudo -K
                     ;;
                 IntelliJ)
                     clear
                     install_flatpak_packages com.jetbrains.IntelliJ-IDEA-Community
-                    sudo -K
                     ;;
                 GiMP)
                     clear
                     install_flatpak_packages org.gimp.GIMP org.gimp.GIMP.Manual org.gimp.GIMP.Plugin.Resynthesizer org.gimp.GIMP.Plugin.LiquidRescale org.gimp.GIMP.Plugin.Lensfun org.gimp.GIMP.Plugin.GMic org.gimp.GIMP.Plugin.Fourier org.gimp.GIMP.Plugin.FocusBlur org.gimp.GIMP.Plugin.BIMP
-                    sudo -K
                     ;;
                 Krita)
                     clear
                     install_flatpak_packages flathub org.kde.krita
-                    sudo -K
                     ;;
                 Blender)
                     clear
                     install_pacman_packages blender
-                    sudo -K
                     ;;
                 GoDot)
                     clear
                     install_pacman_packages godot
-                    sudo -K
                     ;;
                 MPV)
                     clear
                     install_pacman_packages mpv mpv-mpris
-                    sudo -K
                     ;;
                 Spotify)
                     clear
                     install_flatpak_packages com.spotify.Client
-                    sudo -K
                     ;;
                 Tenacity)
                     clear
                     install_flatpak_packages org.tenacityaudio.Tenacity
-                    sudo -K
                     ;;
                 Strawberry)
                     clear
                     install_flatpak_packages org.strawberrymusicplayer.strawberry
-                    sudo -K
                     ;;
                 JamesDSP)
                     clear
                     install_flatpak_packages me.timschneeberger.jdsp4linux
-                    sudo -K
                     ;;
                 qpwgraph)
                     clear
                     install_flatpak_packages org.rncbc.qpwgraph
-                    sudo -K
                     ;;
                 Equibop)
                     clear
                     install_flatpak_packages io.github.equicord.equibop
-                    sudo -K
                     ;;
                 Ferdium)
                     clear
                     install_flatpak_packages org.ferdium.Ferdium
-                    sudo -K
                     ;;
                 Telegram)
                     clear
                     install_flatpak_packages org.telegram.desktop
-                    sudo -K
                     ;;
                 Tokodon)
                     clear
                     install_flatpak_packages org.kde.tokodon
-                    sudo -K
                     ;;
                 WhatsApp)
                     clear
                     install_flatpak_packages com.rtosta.zapzap
-                    sudo -K
                     ;;
                 Chatterino)
                     clear
                     install_flatpak_packages com.chatterino.chatterino
-                    sudo -K
                     ;;
                 Element)
                     clear
                     install_pacman_packages element-desktop
-                    sudo -K
                     ;;
                 SimpleX)
                     clear
                     install_flatpak_packages chat.simplex.simplex
-                    sudo -K
                     ;;
                 VirtManager)
                     clear
@@ -333,48 +303,39 @@ package_selection_dialog() {
                     install_pacman_packages virt-manager-meta openbsd-netcat
                     echo -e "options kvm-intel nested=1" | sudo tee -a /etc/modprobe.d/kvm-intel.conf
                     sudo systemctl restart libvirtd.service
-                    sudo -K
                     echo
                     ;;
                 VirtualBox)
                     clear
                     install_pacman_packages virtualbox-meta
-                    sudo -K
                     ;;
                 KDEnLive)
                     clear
                     install_pacman_packages kdenlive
-                    sudo -K
                     ;;
                 LosslessCut)
                     clear
                     install_aur_packages losslesscut-bin
-                    sudo -K
                     ;;
                 OBS-Studio)
                     clear
                     install_flatpak_packages com.obsproject.Studio com.obsproject.Studio.Plugin.Draw com.obsproject.Studio.Plugin.waveform com.obsproject.Studio.Plugin.WebSocket com.obsproject.Studio.Plugin.TransitionTable com.obsproject.Studio.Plugin.SceneSwitcher com.obsproject.Studio.Plugin.ScaleToSound com.obsproject.Studio.Plugin.OBSVkCapture com.obsproject.Studio.Plugin.OBSLivesplitOne com.obsproject.Studio.Plugin.DistroAV com.obsproject.Studio.Plugin.MoveTransition com.obsproject.Studio.Plugin.Gstreamer com.obsproject.Studio.Plugin.GStreamerVaapi com.obsproject.Studio.Plugin.DroidCam com.obsproject.Studio.Plugin.BackgroundRemoval com.obsproject.Studio.Plugin.AitumMultistream com.obsproject.Studio.Plugin.AdvancedMasks com.obsproject.Studio.Plugin.CompositeBlur com.obsproject.Studio.Plugin.SourceClone com.obsproject.Studio.Plugin.DownstreamKeyer com.obsproject.Studio.Plugin.Shaderfilter com.obsproject.Studio.Plugin.FreezeFilter com.obsproject.Studio.Plugin.SourceRecord com.obsproject.Studio.Plugin._3DEffect org.freedesktop.LinuxAudio.Plugins.x42Plugins org.freedesktop.Platform.VulkanLayer.OBSVkCapture/x86_64/24.08
-                    sudo -K
                     ;;
                 Mystiq)
                     clear
                     install_aur_packages mystiq
-                    sudo -K
                     ;;
                 MKVToolNix)
                     clear
                     install_pacman_packages mkvtoolnix-gui
-                    sudo -K
                     ;;
                 MakeMKV)
                     clear
                     install_flatpak_packages com.makemkv.MakeMKV
-                    sudo -K
                     ;;
                 Avidemux)
                     clear
                     install_pacman_packages avidemux-qt
-                    sudo -K
                     ;;
                 *)
                     echo "Unknown package: $PACKAGE"
@@ -382,7 +343,12 @@ package_selection_dialog() {
             esac
         done
     else
-        echo "No packages selected."
+        PKG_DIALOG_EXITED=1
+        clear
+        echo
+        echo
+        figlet -t -c "No packages selected. Returning to menu." | lolcat
+        sleep 10
     fi
 }
 
@@ -396,173 +362,200 @@ process_choice() {
     case $CHOICE in
       1)
         sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
-        sudo -K
         install_aur_packages ttf-gentium-basic hsqldb2-java libreoffice-extension-languagetool
         echo
         gum style --foreground 7 "##########  Done, Please Reboot !  ##########"
         sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
-        else
-          echo "Please reboot your system to apply the changes."
-        fi
+        clear && exec "$0"
         ;;
       2)
-        package_selection_dialog "Select Browser(s) to install:" \
-        "Brave" "The web browser from Brave" OFF \
-        "Firefox" "Fast, Private & Safe Web Browser" OFF \
-        "Filezilla" "Fast and reliable FTP client" OFF \
-        "Vivaldi" "Feature-packed web browser" OFF \
-        "Mullvad" "Mass surveillance free browser" OFF \
-        "Floorp" "A Firefox-based Browser" OFF \
-        "LibreWolf" "LibreWolf Web Browser" OFF \
-        "Chromium" "Ungoogled Chromium Browser" OFF \
-        "Tor" "Tor Browser Bundle" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Browsers
+        browser_options=()
+        ! is_pacman_installed brave-bin && browser_options+=("Brave" "The web browser from Brave" OFF)
+        ! is_pacman_installed firefox && browser_options+=("Firefox" "Fast, Private & Safe Web Browser" OFF)
+        ! is_flatpak_installed org.filezillaproject.Filezilla && browser_options+=("Filezilla" "Fast and reliable FTP client" OFF)
+        ! is_flatpak_installed com.vivaldi.Vivaldi && browser_options+=("Vivaldi" "Feature-packed web browser" OFF)
+        ! is_aur_installed mullvad-browser-bin && browser_options+=("Mullvad" "Mass surveillance free browser" OFF)
+        ! is_flatpak_installed one.ablaze.floorp && browser_options+=("Floorp" "A Firefox-based Browser" OFF)
+        ! is_flatpak_installed io.gitlab.librewolf-community && browser_options+=("LibreWolf" "LibreWolf Web Browser" OFF)
+        ! is_flatpak_installed com.github.Eloston.UngoogledChromium && browser_options+=("Chromium" "Ungoogled Chromium Browser" OFF)
+        ! is_flatpak_installed org.torproject.torbrowser-launcher && browser_options+=("Tor" "Tor Browser Bundle" OFF)
+        if [ ${#browser_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All browser packages are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select Browser(s) to install:" "${browser_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       3)
-        package_selection_dialog "Select Development Apps to install :" \
-        "AndroidStudio" "IDE for Android app development" OFF \
-        "neoVide" "No Nonsense Neovim Client in Rust" OFF \
-        "Emacs" "An extensible & customizable text editor" OFF \
-        "LazyGit" "Powerful terminal UI for git commands" OFF \
-        "Hugo" "The fastest Static Site Generator" OFF \
-        "Github" "GitHub Desktop application" OFF \
-        "VSCodium" "Telemetry-less code editing" OFF \
-        "Meld" "Visual diff and merge tool" OFF \
-        "Warp" "The intelligent terminal with AI" OFF \
-        "IntelliJ" "IntelliJ IDEA IDE for Java" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Development Tools
+        dev_options=()
+        ! is_flatpak_installed com.google.AndroidStudio && dev_options+=("AndroidStudio" "IDE for Android app development" OFF)
+        ! is_pacman_installed neovide && dev_options+=("neoVide" "No Nonsense Neovim Client in Rust" OFF)
+        ! is_pacman_installed emacs && dev_options+=("Emacs" "An extensible & customizable text editor" OFF)
+        ! is_pacman_installed lazygit && dev_options+=("LazyGit" "Powerful terminal UI for git commands" OFF)
+        ! is_pacman_installed hugo && dev_options+=("Hugo" "The fastest Static Site Generator" OFF)
+        ! is_flatpak_installed io.github.shiftey.Desktop && dev_options+=("Github" "GitHub Desktop application" OFF)
+        ! is_aur_installed vscodium-bin && dev_options+=("VSCodium" "Telemetry-less code editing" OFF)
+        ! is_pacman_installed meld && dev_options+=("Meld" "Visual diff and merge tool" OFF)
+        ! is_aur_installed warp-terminal-bin && dev_options+=("Warp" "The intelligent terminal with AI" OFF)
+        ! is_flatpak_installed com.jetbrains.IntelliJ-IDEA-Community && dev_options+=("IntelliJ" "IntelliJ IDEA IDE for Java" OFF)
+        if [ ${#dev_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All development tools are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select Development Apps to install :" "${dev_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       4)
-        package_selection_dialog "Select Photography & 3D Apps to install:" \
-        "GiMP" "GNU Image Manipulation Program" OFF \
-        "Krita" "Edit and paint images" OFF \
-        "Blender" "A 3D graphics creation suite" OFF \
-        "GoDot" "Cross-platform 3D game engine" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Photo and 3D Tools
+        photo_options=()
+        ! is_flatpak_installed org.gimp.GIMP && photo_options+=("GiMP" "GNU Image Manipulation Program" OFF)
+        ! is_flatpak_installed org.kde.krita && photo_options+=("Krita" "Edit and paint images" OFF)
+        ! is_pacman_installed blender && photo_options+=("Blender" "A 3D graphics creation suite" OFF)
+        ! is_pacman_installed godot && photo_options+=("GoDot" "Cross-platform 3D game engine" OFF)
+        if [ ${#photo_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All photo/3D tools are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select Photography & 3D Apps to install:" "${photo_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       5)
-        package_selection_dialog "Select Music & Media Apps to install:" \
-        "MPV" "An OpenSource media player" OFF \
-        "Spotify" "Online music streaming service" OFF \
-        "Tenacity" "Telemetry-less Audio editing" OFF \
-        "Strawberry" "A music player for collectors" OFF \
-        "JamesDSP" "FOSS audio effect processor for Pipewire" OFF \
-        "qpwgraph" "A PipeWire Graph Qt GUI Interface" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Music & Media Tools
+        music_options=()
+        ! is_pacman_installed mpv && music_options+=("MPV" "An OpenSource media player" OFF)
+        ! is_flatpak_installed com.spotify.Client && music_options+=("Spotify" "Online music streaming service" OFF)
+        ! is_flatpak_installed org.tenacityaudio.Tenacity && music_options+=("Tenacity" "Telemetry-less Audio editing" OFF)
+        ! is_flatpak_installed org.strawberrymusicplayer.strawberry && music_options+=("Strawberry" "A music player for collectors" OFF)
+        ! is_flatpak_installed me.timschneeberger.jdsp4linux && music_options+=("JamesDSP" "FOSS audio effect processor for Pipewire" OFF)
+        ! is_flatpak_installed org.rncbc.qpwgraph && music_options+=("qpwgraph" "A PipeWire Graph Qt GUI Interface" OFF)
+        if [ ${#music_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All music/media tools are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select Music & Media Apps to install:" "${music_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       6)
-        package_selection_dialog "Select Social/Web Apps to install:" \
-        "Equibop" "Snappier Discord app with Equicord" OFF \
-        "Ferdium" "Organize many web-apps into one" OFF \
-        "Telegram" "Official Telegram Desktop client" OFF \
-        "Tokodon" "A Mastodon client for Plasma" OFF \
-        "WhatsApp" "WhatsApp client called ZapZap" OFF \
-        "Chatterino" "A Chat client for twitch.tv" OFF \
-        "Element" "Matrix collaboration client" OFF \
-        "SimpleX" "A private & encrypted messenger" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Social & Chat Tools
+        social_options=()
+        ! is_flatpak_installed io.github.equicord.equibop && social_options+=("Equibop" "Snappier Discord app with Equicord" OFF)
+        ! is_flatpak_installed org.ferdium.Ferdium && social_options+=("Ferdium" "Organize many web-apps into one" OFF)
+        ! is_flatpak_installed org.telegram.desktop && social_options+=("Telegram" "Official Telegram Desktop client" OFF)
+        ! is_flatpak_installed org.kde.tokodon && social_options+=("Tokodon" "A Mastodon client for Plasma" OFF)
+        ! is_flatpak_installed com.rtosta.zapzap && social_options+=("WhatsApp" "WhatsApp client called ZapZap" OFF)
+        ! is_flatpak_installed com.chatterino.chatterino && social_options+=("Chatterino" "A Chat client for twitch.tv" OFF)
+        ! is_pacman_installed element-desktop && social_options+=("Element" "Matrix collaboration client" OFF)
+        ! is_flatpak_installed chat.simplex.simplex && social_options+=("SimpleX" "A private & encrypted messenger" OFF)
+        if [ ${#social_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All social/chat tools are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select Social/Web Apps to install:" "${social_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       7)
-        PACKAGES=$(dialog --checklist "Select Virtualization System:" 10 50 2 \
+        # Virtualization Tools
+        virt_options=()
+        ! is_pacman_installed virt-manager-meta && virt_options+=("VirtManager" "QEMU virtual machines" OFF)
+        ! is_pacman_installed virtualbox-meta && virt_options+=("VirtualBox" "x86 virtualization" OFF)
+        if [ ${#virt_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All virtualization tools are already installed."
+          sleep 3
+          clear && exec "$0"
+        else
+          PACKAGES=$(dialog --checklist "Select Virtualization System:" 10 50 2 \
             "VirtManager" "QEMU virtual machines" OFF \
             "VirtualBox" "x86 virtualization" OFF \
             3>&1 1>&2 2>&3) || true
 
-        if [ -n "$PACKAGES" ]; then
+          if [ -n "$PACKAGES" ]; then
             for PACKAGE in $PACKAGES; do
-                case $PACKAGE in
-                    VirtManager)
-                        clear
-                        for pkg in iptables gnu-netcat; do
-                            if pacman -Q $pkg &>/dev/null; then
-                                sudo pacman -Rdd --noconfirm $pkg
-                            fi
-                        done;
-                        install_pacman_packages virt-manager-meta openbsd-netcat
-                        echo -e "options kvm-intel nested=1" | sudo tee -a /etc/modprobe.d/kvm-intel.conf
-                        sudo systemctl restart libvirtd.service
-                        sudo -K
-                        echo
-                        ;;
-                    VirtualBox)
-                        clear
-                        install_pacman_packages virtualbox-meta
-                        sudo -K
-                        ;;
-                esac
+              case $PACKAGE in
+                VirtManager)
+                  clear
+                  for pkg in iptables gnu-netcat; do
+                    if pacman -Q $pkg &>/dev/null; then
+                      sudo pacman -Rdd --noconfirm $pkg
+                    fi
+                  done;
+                  install_pacman_packages virt-manager-meta openbsd-netcat
+                  echo -e "options kvm-intel nested=1" | sudo tee -a /etc/modprobe.d/kvm-intel.conf
+                  sudo systemctl restart libvirtd.service
+                  echo
+                  ;;
+                VirtualBox)
+                  clear
+                  install_pacman_packages virtualbox-meta
+                  ;;
+              esac
             done
+          fi
         fi
         echo
         gum style --foreground 7 "########## Done! Please Reboot. ##########"
         sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
-        else
-          echo "Please reboot your system to apply the changes."
-        fi
+        clear && exec "$0"
         ;;
       8)
-        package_selection_dialog "Select App(s) to install :" \
-        "KDEnLive" "A non-linear video editor" OFF \
-        "LosslessCut" "GUI tool for lossless trimming of videos" OFF \
-        "OBS-Studio" "Includes many Plugins (Flatpak)" OFF \
-        "Mystiq" "FFmpeg GUI front-end based on Qt5" OFF \
-        "MKVToolNix" "Matroska files creator and tools" OFF \
-        "MakeMKV" "DVD and Blu-ray to MKV converter" OFF \
-        "Avidemux" "Graphical tool to edit video" OFF
-        echo
-        gum style --foreground 7 "##########  Done ! ##########"
-        sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
+        # Video Tools & Software
+        video_options=()
+        ! is_pacman_installed kdenlive && video_options+=("KDEnLive" "A non-linear video editor" OFF)
+        ! is_aur_installed losslesscut-bin && video_options+=("LosslessCut" "GUI tool for lossless trimming of videos" OFF)
+        ! is_flatpak_installed com.obsproject.Studio && video_options+=("OBS-Studio" "Includes many Plugins (Flatpak)" OFF)
+        ! is_aur_installed mystiq && video_options+=("Mystiq" "FFmpeg GUI front-end based on Qt5" OFF)
+        ! is_pacman_installed mkvtoolnix-gui && video_options+=("MKVToolNix" "Matroska files creator and tools" OFF)
+        ! is_flatpak_installed com.makemkv.MakeMKV && video_options+=("MakeMKV" "DVD and Blu-ray to MKV converter" OFF)
+        ! is_pacman_installed avidemux-qt && video_options+=("Avidemux" "Graphical tool to edit video" OFF)
+        if [ ${#video_options[@]} -eq 0 ]; then
+          gum style --foreground 7 "All video tools are already installed."
+          sleep 3
+          clear && exec "$0"
         else
-          echo "Please reboot your system to apply the changes."
+          package_selection_dialog "Select App(s) to install :" "${video_options[@]}"
         fi
+        if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+          echo
+          gum style --foreground 7 "##########  Done ! ##########"
+          sleep 3
+        fi
+        clear && exec "$0"
         ;;
       9)
         bash -c "$(curl -fsSL https://xerolinux.xyz/script/davinci.sh)"
@@ -575,16 +568,10 @@ process_choice() {
         echo
         sleep 3
         install_aur_packages linux-headers downgrade mkinitcpio-firmware pkgstats alsi update-grub expac linux-firmware-marvell eza numlockx lm_sensors appstream-glib bat bat-extras pacman-contrib pacman-bintrans yt-dlp gnustep-base parallel dex make libxinerama logrotate bash-completion gtk-update-icon-cache gnome-disk-utility appmenu-gtk-module dconf-editor dbus-python lsb-release asciinema playerctl s3fs-fuse vi duf gcc yad zip xdo inxi lzop nmon mkinitcpio-archiso mkinitcpio-nfs-utils tree vala btop lshw expac fuse3 meson unace unrar unzip p7zip rhash sshfs vnstat nodejs cronie hwinfo hardinfo2 arandr assimp netpbm wmctrl grsync libmtp polkit sysprof gparted hddtemp mlocate fuseiso gettext node-gyp graphviz inetutils appstream cifs-utils ntfs-3g nvme-cli exfatprogs f2fs-tools man-db man-pages tldr python-pip python-cffi python-numpy python-docopt python-pyaudio xdg-desktop-portal-gtk
-        sudo -K
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        reboot_countdown 5
-        if confirm_prompt "Do you want to reboot now?"; then
-          reboot
-        else
-          echo "Please reboot your system to apply the changes."
-        fi
+        clear && exec "$0"
         ;;
       r)
         gum style --foreground 33 "Rebooting System..."
