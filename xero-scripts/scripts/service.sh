@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
+
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
@@ -54,6 +60,7 @@ install_firewalld() {
     echo
     gum style --foreground 7 "########## All Done, Enjoy! ##########"
     sleep 3
+    sudo -K
     main
 }
 
@@ -61,6 +68,7 @@ clear_pacman_cache() {
     echo
     sudo pacman -Scc
     sleep 2
+    sudo -K
     main
 }
 
@@ -90,6 +98,7 @@ vm_guest() {
         ;;
      esac
     sleep 2
+    sudo -K
     main
 }
 
@@ -97,6 +106,7 @@ unlock_pacman_db() {
     echo
     sudo rm /var/lib/pacman/db.lck || exit 1
     sleep 2
+    sudo -K
     main
 }
 
@@ -110,6 +120,7 @@ activate_v4l2loopback() {
     echo
     gum style --foreground 7 "Please reboot your system for changes to take effect."
     sleep 2
+    sudo -K
     main
 }
 
@@ -121,6 +132,7 @@ x11_session() {
         echo
         echo "Please reboot to apply..."
         sleep 6
+        sudo -K
         main
     }
 
@@ -139,6 +151,7 @@ build_archiso() {
     echo
     gum style --foreground 7 "########## Done ! Check ~/ArchOut ##########"
     sleep 6
+    sudo -K
     main
 }
 
@@ -152,12 +165,7 @@ reset_everything() {
        cp -Rf ~/.config ~/.config-backup-$(date +%Y.%m.%d-%H.%M) && rm -rf $HOME/.config
    fi
 
-   for i in {15..1}; do
-       dialog --infobox "Rebooting in $i seconds..." 3 30
-       sleep 1
-   done
-
-   reboot || exit 1
+   reboot_countdown 5
 }
 
 waydroid_guide() {
@@ -166,6 +174,7 @@ waydroid_guide() {
    sleep 3
    xdg-open "https://xerolinux.xyz/posts/waydroid-guide/" > /dev/null 2>&1
    sleep 3
+   sudo -K
    main
 }
 
@@ -190,6 +199,7 @@ update_mirrorlist() {
    gum style --foreground 69 "########## Done! Updating should go faster ##########"
 
    sleep 3
+   sudo -K
    main
 }
 
@@ -209,6 +219,7 @@ fix_gpg_keyring() {
    gum style --foreground 69 "########## Done! Try Update now & Report ##########"
 
    sleep 3
+   sudo -K
    main
 }
 
@@ -219,13 +230,13 @@ restart() {
     sleep 3
 
     # Countdown from 5 to 1
-    for i in {5..1}; do
-        dialog --infobox "Rebooting in $i seconds..." 3 30
-        sleep 1
-    done
+    reboot_countdown 5
 
-    # Execute the reboot command
-    reboot
+    if confirm_prompt "Do you want to reboot now?"; then
+      reboot
+    else
+      echo "Please reboot your system to apply the changes."
+    fi
 }
 
 disable_debug() {
@@ -260,16 +271,11 @@ disable_debug() {
         gum style --foreground 7 "Operation canceled."
     fi
     sleep 2
+    sudo -K
     main
 }
 
 main() {
-    # Check if script is run as root
-    if [[ $EUID -eq 0 ]]; then
-        gum style --foreground 196 "This script should not be run as root"
-        exit 1
-    fi
-
     while :; do
         display_menu
         echo

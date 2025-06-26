@@ -33,6 +33,20 @@ install_nvidia_intel() {
         sudo pacman -S --needed --noconfirm linux-headers nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     fi
     sudo pacman -S --needed --noconfirm vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
+
+    # Add nvidia-drm.modeset=1 to GRUB if not present
+    if ! grep -q 'nvidia-drm.modeset=1' /etc/default/grub; then
+        sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 nvidia-drm.modeset=1"/' /etc/default/grub
+        echo "Added nvidia-drm.modeset=1 to GRUB_CMDLINE_LINUX_DEFAULT."
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+
+    # Ensure NVIDIA modules in mkinitcpio.conf
+    if ! grep -q '^MODULES=.*nvidia.*' /etc/mkinitcpio.conf; then
+        sudo sed -i 's/^MODULES=(/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm /' /etc/mkinitcpio.conf
+        echo "Added NVIDIA modules to mkinitcpio.conf."
+        sudo mkinitcpio -P
+    fi
 }
 
 # Function to install NVIDIA and AMD drivers
@@ -44,6 +58,20 @@ install_nvidia_amd() {
         sudo pacman -S --needed --noconfirm linux-headers nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     fi
     sudo pacman -S --needed --noconfirm vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk
+
+    # Add nvidia-drm.modeset=1 to GRUB if not present
+    if ! grep -q 'nvidia-drm.modeset=1' /etc/default/grub; then
+        sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 nvidia-drm.modeset=1"/' /etc/default/grub
+        echo "Added nvidia-drm.modeset=1 to GRUB_CMDLINE_LINUX_DEFAULT."
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+
+    # Ensure NVIDIA modules in mkinitcpio.conf
+    if ! grep -q '^MODULES=.*nvidia.*' /etc/mkinitcpio.conf; then
+        sudo sed -i 's/^MODULES=(/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm /' /etc/mkinitcpio.conf
+        echo "Added NVIDIA modules to mkinitcpio.conf."
+        sudo mkinitcpio -P
+    fi
 }
 
 # Function to switch NVIDIA drivers

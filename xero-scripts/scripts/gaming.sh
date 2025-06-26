@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
+
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
@@ -150,7 +156,7 @@ process_choice() {
         echo "Patching VM.Max.MapCount"
         echo
         echo "vm.max_map_count=2147483642" | sudo tee /etc/sysctl.d/99-sysctl.conf >/dev/null
-        sleep 3
+        sudo -K
         gum style --foreground 7 "Steam installation complete!"
         sleep 3
         clear && exec "$0"

@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
+
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
@@ -32,8 +38,7 @@ display_options() {
   gum style --foreground 7 "3. Install Distrobox."
 }
 
-# Add this before process_choice function
-# Determine AUR helper
+# Dependency check for yay or paru
 if command -v yay >/dev/null 2>&1; then
     AUR_HELPER="yay"
 elif command -v paru >/dev/null 2>&1; then
@@ -73,7 +78,8 @@ process_choice() {
         echo
         sudo systemctl enable --now docker || handle_error
         sudo usermod -aG docker "$USER" || handle_error
-        sleep 2
+        sudo -K
+        sleep 3
         gum style --foreground 7 "Docker setup complete!"
         sleep 3
         clear && exec "$0"
@@ -105,6 +111,7 @@ process_choice() {
         
         sleep 2
         gum style --foreground 7 "Podman setup complete!"
+        sudo -K
         sleep 3
         clear && exec "$0"
         ;;
@@ -116,21 +123,18 @@ process_choice() {
         flatpak install -y io.github.dvlv.boxbuddyrs
         echo
         gum style --foreground 7 "Distrobox installation complete!"
+        sudo -K
         sleep 3
         clear && exec "$0"
         ;;
       r)
         gum style --foreground 33 "Rebooting System..."
         sleep 3
-        # Countdown from 5 to 1
-        for i in {5..1}; do
-            dialog --infobox "Rebooting in $i seconds..." 3 30
-            sleep 1
-        done
-
-        # Reboot after the countdown
-        reboot
-        sleep 3
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       q)
         clear && exec xero-cli -m

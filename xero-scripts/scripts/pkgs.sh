@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-set -e
+
+# Source common functions
+source "$(dirname "$0")/common.sh"
+
+# Check for root and clear sudo cache before AUR operations
+check_root_and_clear_cache
 
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
@@ -66,42 +71,52 @@ package_selection_dialog() {
                 Brave)
                     clear
                     install_aur_packages brave-bin
+                    sudo -K
                     ;;
                 Firefox)
                     clear
                     install_pacman_packages firefox firefox-ublock-origin
+                    sudo -K
                     ;;
                 Filezilla)
                     clear
                     install_flatpak_packages org.filezillaproject.Filezilla
+                    sudo -K
                     ;;
                 Vivaldi)
                     clear
                     install_flatpak_packages com.vivaldi.Vivaldi
+                    sudo -K
                     ;;
                 Mullvad)
                     clear
                     install_aur_packages mullvad-browser-bin
+                    sudo -K
                     ;;
                 Floorp)
                     clear
                     install_flatpak_packages flathub one.ablaze.floorp
+                    sudo -K
                     ;;
                 LibreWolf)
                     clear
                     install_flatpak_packages io.gitlab.librewolf-community
+                    sudo -K
                     ;;
                 Chromium)
                     clear
                     install_flatpak_packages com.github.Eloston.UngoogledChromium
+                    sudo -K
                     ;;
                 Tor)
                     clear
                     install_flatpak_packages org.torproject.torbrowser-launcher
+                    sudo -K
                     ;;
                 AndroidStudio)
                     clear
                     install_flatpak_packages com.google.AndroidStudio
+                    sudo -K
                     ;;
                 neoVide)
                     clear
@@ -147,26 +162,32 @@ package_selection_dialog() {
                         rm -rf ~/.config/nvim/.git
                     fi
                     sleep 6
+                    sudo -K
                     ;;
                 Hugo)
                     clear
                     install_pacman_packages hugo
+                    sudo -K
                     ;;
                 Github)
                     clear
                     install_flatpak_packages io.github.shiftey.Desktop
+                    sudo -K
                     ;;
                 VSCodium)
                     clear
                     install_aur_packages vscodium-bin vscodium-bin-marketplace vscodium-bin-features
+                    sudo -K
                     ;;
                 Meld)
                     clear
                     install_pacman_packages meld
+                    sudo -K
                     ;;
                 Cursor)
                     clear
                     install_aur_packages cursor-extracted
+                    sudo -K
                     ;;
                 Emacs)
                     clear
@@ -180,6 +201,7 @@ package_selection_dialog() {
                     case $emacs_choice in
                         1)
                             install_pacman_packages emacs ttf-ubuntu-font-family ttf-jetbrains-mono-nerd ttf-jetbrains-mono
+                            sudo -K
                             ;;
                         2)
                             install_pacman_packages emacs ttf-ubuntu-font-family ttf-jetbrains-mono-nerd ttf-jetbrains-mono
@@ -189,6 +211,7 @@ package_selection_dialog() {
                             cd ~ && git clone https://github.com/xerolinux/eMacs-Config.git && cd eMacs-Config/ && cp -R emacs/ $HOME/.config
                             rm -rf ~/emacs/ && rm -rf ~/emacs/eMacs-Config/
                             sleep 6
+                            sudo -K
                             ;;
                         *)
                             echo "Invalid choice. Returning to menu."
@@ -198,86 +221,107 @@ package_selection_dialog() {
                 LazyGit)
                     clear
                     install_pacman_packages lazygit
+                    sudo -K
                     ;;
                 Warp)
                     clear
                     install_aur_packages warp-terminal-bin
+                    sudo -K
                     ;;
                 IntelliJ)
                     clear
                     install_flatpak_packages com.jetbrains.IntelliJ-IDEA-Community
+                    sudo -K
                     ;;
                 GiMP)
                     clear
                     install_flatpak_packages org.gimp.GIMP org.gimp.GIMP.Manual org.gimp.GIMP.Plugin.Resynthesizer org.gimp.GIMP.Plugin.LiquidRescale org.gimp.GIMP.Plugin.Lensfun org.gimp.GIMP.Plugin.GMic org.gimp.GIMP.Plugin.Fourier org.gimp.GIMP.Plugin.FocusBlur org.gimp.GIMP.Plugin.BIMP
+                    sudo -K
                     ;;
                 Krita)
                     clear
                     install_flatpak_packages flathub org.kde.krita
+                    sudo -K
                     ;;
                 Blender)
                     clear
                     install_pacman_packages blender
+                    sudo -K
                     ;;
                 GoDot)
                     clear
                     install_pacman_packages godot
+                    sudo -K
                     ;;
                 MPV)
                     clear
                     install_pacman_packages mpv mpv-mpris
+                    sudo -K
                     ;;
                 Spotify)
                     clear
                     install_flatpak_packages com.spotify.Client
+                    sudo -K
                     ;;
                 Tenacity)
                     clear
                     install_flatpak_packages org.tenacityaudio.Tenacity
+                    sudo -K
                     ;;
                 Strawberry)
                     clear
                     install_flatpak_packages org.strawberrymusicplayer.strawberry
+                    sudo -K
                     ;;
                 JamesDSP)
                     clear
                     install_flatpak_packages me.timschneeberger.jdsp4linux
+                    sudo -K
                     ;;
                 qpwgraph)
                     clear
                     install_flatpak_packages org.rncbc.qpwgraph
+                    sudo -K
                     ;;
                 Equibop)
                     clear
                     install_flatpak_packages io.github.equicord.equibop
+                    sudo -K
                     ;;
                 Ferdium)
                     clear
                     install_flatpak_packages org.ferdium.Ferdium
+                    sudo -K
                     ;;
                 Telegram)
                     clear
                     install_flatpak_packages org.telegram.desktop
+                    sudo -K
                     ;;
                 Tokodon)
                     clear
                     install_flatpak_packages org.kde.tokodon
+                    sudo -K
                     ;;
                 WhatsApp)
                     clear
                     install_flatpak_packages com.rtosta.zapzap
+                    sudo -K
                     ;;
                 Chatterino)
                     clear
                     install_flatpak_packages com.chatterino.chatterino
+                    sudo -K
                     ;;
                 Element)
                     clear
                     install_pacman_packages element-desktop
+                    sudo -K
                     ;;
                 SimpleX)
                     clear
                     install_flatpak_packages chat.simplex.simplex
+                    sudo -K
                     ;;
                 VirtManager)
                     clear
@@ -289,39 +333,48 @@ package_selection_dialog() {
                     install_pacman_packages virt-manager-meta openbsd-netcat
                     echo -e "options kvm-intel nested=1" | sudo tee -a /etc/modprobe.d/kvm-intel.conf
                     sudo systemctl restart libvirtd.service
+                    sudo -K
                     echo
                     ;;
                 VirtualBox)
                     clear
                     install_pacman_packages virtualbox-meta
+                    sudo -K
                     ;;
                 KDEnLive)
                     clear
                     install_pacman_packages kdenlive
+                    sudo -K
                     ;;
                 LosslessCut)
                     clear
                     install_aur_packages losslesscut-bin
+                    sudo -K
                     ;;
                 OBS-Studio)
                     clear
                     install_flatpak_packages com.obsproject.Studio com.obsproject.Studio.Plugin.Draw com.obsproject.Studio.Plugin.waveform com.obsproject.Studio.Plugin.WebSocket com.obsproject.Studio.Plugin.TransitionTable com.obsproject.Studio.Plugin.SceneSwitcher com.obsproject.Studio.Plugin.ScaleToSound com.obsproject.Studio.Plugin.OBSVkCapture com.obsproject.Studio.Plugin.OBSLivesplitOne com.obsproject.Studio.Plugin.DistroAV com.obsproject.Studio.Plugin.MoveTransition com.obsproject.Studio.Plugin.Gstreamer com.obsproject.Studio.Plugin.GStreamerVaapi com.obsproject.Studio.Plugin.DroidCam com.obsproject.Studio.Plugin.BackgroundRemoval com.obsproject.Studio.Plugin.AitumMultistream com.obsproject.Studio.Plugin.AdvancedMasks com.obsproject.Studio.Plugin.CompositeBlur com.obsproject.Studio.Plugin.SourceClone com.obsproject.Studio.Plugin.DownstreamKeyer com.obsproject.Studio.Plugin.Shaderfilter com.obsproject.Studio.Plugin.FreezeFilter com.obsproject.Studio.Plugin.SourceRecord com.obsproject.Studio.Plugin._3DEffect org.freedesktop.LinuxAudio.Plugins.x42Plugins org.freedesktop.Platform.VulkanLayer.OBSVkCapture/x86_64/24.08
+                    sudo -K
                     ;;
                 Mystiq)
                     clear
                     install_aur_packages mystiq
+                    sudo -K
                     ;;
                 MKVToolNix)
                     clear
                     install_pacman_packages mkvtoolnix-gui
+                    sudo -K
                     ;;
                 MakeMKV)
                     clear
                     install_flatpak_packages com.makemkv.MakeMKV
+                    sudo -K
                     ;;
                 Avidemux)
                     clear
                     install_pacman_packages avidemux-qt
+                    sudo -K
                     ;;
                 *)
                     echo "Unknown package: $PACKAGE"
@@ -343,11 +396,17 @@ process_choice() {
     case $CHOICE in
       1)
         sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
+        sudo -K
         install_aur_packages ttf-gentium-basic hsqldb2-java libreoffice-extension-languagetool
         echo
         gum style --foreground 7 "##########  Done, Please Reboot !  ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       2)
         package_selection_dialog "Select Browser(s) to install:" \
@@ -363,7 +422,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       3)
         package_selection_dialog "Select Development Apps to install :" \
@@ -380,7 +444,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       4)
         package_selection_dialog "Select Photography & 3D Apps to install:" \
@@ -391,7 +460,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       5)
         package_selection_dialog "Select Music & Media Apps to install:" \
@@ -404,7 +478,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       6)
         package_selection_dialog "Select Social/Web Apps to install:" \
@@ -419,7 +498,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       7)
         PACKAGES=$(dialog --checklist "Select Virtualization System:" 10 50 2 \
@@ -440,11 +524,13 @@ process_choice() {
                         install_pacman_packages virt-manager-meta openbsd-netcat
                         echo -e "options kvm-intel nested=1" | sudo tee -a /etc/modprobe.d/kvm-intel.conf
                         sudo systemctl restart libvirtd.service
+                        sudo -K
                         echo
                         ;;
                     VirtualBox)
                         clear
                         install_pacman_packages virtualbox-meta
+                        sudo -K
                         ;;
                 esac
             done
@@ -452,7 +538,12 @@ process_choice() {
         echo
         gum style --foreground 7 "########## Done! Please Reboot. ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       8)
         package_selection_dialog "Select App(s) to install :" \
@@ -466,7 +557,12 @@ process_choice() {
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       9)
         bash -c "$(curl -fsSL https://xerolinux.xyz/script/davinci.sh)"
@@ -479,10 +575,16 @@ process_choice() {
         echo
         sleep 3
         install_aur_packages linux-headers downgrade mkinitcpio-firmware pkgstats alsi update-grub expac linux-firmware-marvell eza numlockx lm_sensors appstream-glib bat bat-extras pacman-contrib pacman-bintrans yt-dlp gnustep-base parallel dex make libxinerama logrotate bash-completion gtk-update-icon-cache gnome-disk-utility appmenu-gtk-module dconf-editor dbus-python lsb-release asciinema playerctl s3fs-fuse vi duf gcc yad zip xdo inxi lzop nmon mkinitcpio-archiso mkinitcpio-nfs-utils tree vala btop lshw expac fuse3 meson unace unrar unzip p7zip rhash sshfs vnstat nodejs cronie hwinfo hardinfo2 arandr assimp netpbm wmctrl grsync libmtp polkit sysprof gparted hddtemp mlocate fuseiso gettext node-gyp graphviz inetutils appstream cifs-utils ntfs-3g nvme-cli exfatprogs f2fs-tools man-db man-pages tldr python-pip python-cffi python-numpy python-docopt python-pyaudio xdg-desktop-portal-gtk
+        sudo -K
         echo
         gum style --foreground 7 "##########  Done ! ##########"
         sleep 3
-        clear && exec "$0"
+        reboot_countdown 5
+        if confirm_prompt "Do you want to reboot now?"; then
+          reboot
+        else
+          echo "Please reboot your system to apply the changes."
+        fi
         ;;
       r)
         gum style --foreground 33 "Rebooting System..."
