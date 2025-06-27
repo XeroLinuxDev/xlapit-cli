@@ -29,6 +29,7 @@ display_options() {
   gum style --foreground 7 "2. Setup ble.sh tools for Bash Shell."
   gum style --foreground 7 "3. Setup Oh-My-Posh prompt (Vanilla Arch)."
   gum style --foreground 7 "4. Setup ZSH All in one with Oh-My-Posh/Plugs."
+  gum style --foreground 7 "5. Install Save Desktop Config tool (KDE/Gnome)."
   echo
   gum style --foreground 190 "a. Apply Adwaita GTK2 Patch/Fix."
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
@@ -223,6 +224,16 @@ process_choice() {
         fi
         echo
         gum style --foreground 7 "ZSH setup complete! Log out and back in."
+        sleep 3
+        clear && exec "$0"
+        ;;
+      5)
+        gum style --foreground 7 "Installing Save Desktop Tool..."
+        sleep 2
+        echo
+        flatpak install -y io.github.vikdevelop.SaveDesktop
+        echo
+        gum style --foreground 7 "All Done, Enjoy..."
         sleep 3
         clear && exec "$0"
         ;;
