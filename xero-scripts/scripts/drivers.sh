@@ -28,12 +28,10 @@ display_header() {
 display_options() {
     gum style --foreground 85 "1. GPU Drivers (Intel/AMD/nVidia)."
     gum style --foreground 7 "2. Printer Drivers (Vanilla Arch)."
-    gum style --foreground 7 "3. Scanner Drivers & Tools (Vanilla Arch)."
-    gum style --foreground 7 "4. Setup Tailscale Incl. fix for XeroLinux."
-    gum style --foreground 7 "5. DeckLink & StreamDeck Drivers/Tools (AUR)."
-    gum style --foreground 7 "6. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
+    gum style --foreground 7 "3. Setup Tailscale Incl. fix for XeroLinux."
+    gum style --foreground 7 "4. DeckLink & StreamDeck Drivers/Tools (AUR)."
+    gum style --foreground 7 "5. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
     echo
-    gum style --foreground 190 "g. Apply nVidia GSP Firmware Fix (Closed Drivers)."
     gum style --foreground 196 "k. Install Arch Kernel Manager Tool (XeroLinux Repo)."
 }
 
@@ -160,7 +158,7 @@ package_selection_dialog() {
 process_choice() {
     while :; do
         echo
-        read -rp "Enter choice (1‑6), g, k, r, or q: " CHOICE
+        read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
         case $CHOICE in
             1) prompt_user && sleep 3 && clear && exec "$0" ;;
             2)
@@ -176,78 +174,22 @@ process_choice() {
                 sleep 3 && clear && exec "$0"
                 ;;
             3)
-                if grep -q "XeroLinux" /etc/os-release; then
-                    gum style --foreground 49 "Scanner Drivers already installed!"
-                else
-                    gum style --foreground 7 "Installing Scanner Drivers..."
-                    sudo pacman -S --needed --noconfirm scanner-support
-                    gum style --foreground 7 "Scanner setup complete!"
-                fi
-                sleep 3 && clear && exec "$0"
-                ;;
-            4)
                 gum style --foreground 7 "Installing Tailscale..."
                 bash -c "$(curl -fsSL https://raw.githubusercontent.com/xerolinux/xero-fixes/main/conf/install.sh)"
                 gum style --foreground 7 "Tailscale setup complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
-            5)
+            4)
                 gum style --foreground 7 "Installing DeckLink & StreamDeck..."
                 package_selection_dialog "Decklink DeckMaster StreamDeckUI" "install_aur_packages"
                 gum style --foreground 7 "Installation complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
-            6)
+            5)
                 gum style --foreground 7 "Installing ASUS ROG Tools..."
                 install_aur_packages rog-control-center asusctl supergfxctl
                 sudo systemctl enable --now asusd supergfxd
                 gum style --foreground 7 "Setup complete!"
-                sleep 3 && clear && exec "$0"
-                ;;
-            g)
-                gum style --foreground 7 "Managing nVidia GSP fix..."
-                if pacman -Qq | grep -qE 'nvidia-dkms|nvidia-open-dkms'; then
-                    if pacman -Qq | grep -q 'nvidia-open-dkms'; then
-                        read -rp "Open modules found. Switch to closed? (y/n): " resp
-                        if [[ $resp =~ ^[Yy]$ ]]; then
-                            sudo pacman -Rdd --noconfirm nvidia-open-dkms
-                            sudo pacman -S --noconfirm nvidia-dkms
-                            echo -e "options nvidia-drm modeset=1 fbdev=1\noptions nvidia NVreg_EnableGpuFirmware=0" | sudo tee -a /etc/modprobe.d/nvidia-modeset.conf
-                            sudo mkinitcpio -P
-                            gum style --foreground 33 "Closed drivers + GSP fix enabled."
-                        else
-                            gum style --foreground 33 "No change made."
-                        fi
-                    else
-                        read -rp "Pick: 1) Apply GSP 2) Remove 3) Switch to open: " choice
-                        case $choice in
-                            1)
-                                echo -e "options nvidia-drm modeset=1 fbdev=1\noptions nvidia NVreg_EnableGpuFirmware=0" | sudo tee -a /etc/modprobe.d/nvidia-modeset.conf
-                                sudo mkinitcpio -P
-                                gum style --foreground 33 "GSP fix applied."
-                                ;;
-                            2)
-                                sudo rm -f /etc/modprobe.d/nvidia-modeset.conf && sudo mkinitcpio -P
-                                gum style --foreground 33 "GSP fix removed."
-                                ;;
-                            3)
-                                sudo rm -f /etc/modprobe.d/nvidia-modeset.conf
-                                sudo pacman -Rdd --noconfirm nvidia-dkms
-                                sudo pacman -S --noconfirm nvidia-open-dkms
-                                sudo mkinitcpio -P
-                                gum style --foreground 33 "Switched to open + fix removed."
-                                ;;
-                            *)
-                                gum style --foreground 33 "No change."
-                                ;;
-                        esac
-                    fi
-                    read -rp "Reboot now? (y/n): " rb
-                    [[ $rb =~ ^[Yy]$ ]] && reboot
-                    gum style --foreground 33 "Remember to reboot."
-                else
-                    gum style --foreground 40 "No nVidia closed driver installed."
-                fi
                 sleep 3 && clear && exec "$0"
                 ;;
             r)

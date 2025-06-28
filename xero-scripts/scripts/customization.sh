@@ -26,12 +26,9 @@ display_header() {
 # Function to display options
 display_options() {
   gum style --foreground 7 "1. Setup Fastfetch (Vanilla Arch)."
-  gum style --foreground 7 "2. Setup ble.sh tools for Bash Shell."
-  gum style --foreground 7 "3. Setup Oh-My-Posh prompt (Vanilla Arch)."
-  gum style --foreground 7 "4. Setup ZSH All in one with Oh-My-Posh/Plugs."
-  gum style --foreground 7 "5. Install Save Desktop Config tool (KDE/Gnome)."
+  gum style --foreground 7 "2. Setup ZSH All in one with Oh-My-Posh/Plugs."
+  gum style --foreground 7 "3. Install Save Desktop Config tool (KDE/Gnome)."
   echo
-  gum style --foreground 190 "a. Apply Adwaita GTK2 Patch/Fix."
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
   gum style --foreground 200 "x. XeroLinux's Layan Rice (Vanilla KDE)."
   gum style --foreground 225 "w. Install more Plasma Wallpapers (~1.2gb)."
@@ -125,60 +122,6 @@ process_choice() {
         clear && exec "$0"
         ;;
       2)
-        gum style --foreground 7 "Setting up ble.sh for Bash..."
-        sleep 2
-        echo
-        curl -L https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz | tar xJf -
-        bash ble-nightly/ble.sh --install ~/.local/share
-        echo 'source ~/.local/share/blesh/ble.sh' >> ~/.bashrc
-        echo
-        gum style --foreground 7 "Setup complete! Log out and back in."
-        sleep 3
-        clear && exec "$0"
-        ;;
-      3)
-        # Check if running on XeroLinux
-        if grep -q "XeroLinux" /etc/os-release; then
-          gum style --foreground 49 "Oh-My-Posh is already pre-configured on XeroLinux!"
-          sleep 5
-          clear && exec "$0"
-        fi
-
-        gum style --foreground 7 "Setting up Oh-My-Posh..."
-        sleep 2
-        echo
-        $AUR_HELPER -S --noconfirm --needed oh-my-posh-bin
-        mkdir -p "$HOME/.config/ohmyposh"
-        curl -o "$HOME/.config/ohmyposh/xero.omp.json" https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/pararussel.omp.json
-        echo "Injecting OMP to .bashrc"
-        # Define the lines to be added
-        line1='# Oh-My-Posh Config'
-        line2='eval "$(oh-my-posh init bash --config $HOME/.config/ohmyposh/xero.omp.json)"'
-
-        # Define the .bashrc file
-        bashrc_file="$HOME/.bashrc"
-
-        # Function to add lines if not already present
-        add_lines() {
-          if ! grep -qxF "$line1" "$bashrc_file"; then
-            echo "" >> "$bashrc_file"  # Add an empty line before line1
-            echo "$line1" >> "$bashrc_file"
-          fi
-
-          if ! grep -qxF "$line2" "$bashrc_file"; then
-            echo "$line2" >> "$bashrc_file"
-            echo "" >> "$bashrc_file"  # Add an empty line after line2
-          fi
-        }
-
-        # Run the function to add lines
-        add_lines
-        echo
-        gum style --foreground 7 "Oh-My-Posh setup complete! Restart Shell."
-        sleep 6
-        clear && exec "$0"
-        ;;
-      4)
         gum style --foreground 7 "Setting up ZSH with OMP & OMZ Plugins..."
         sleep 2
         echo
@@ -227,23 +170,13 @@ process_choice() {
         sleep 3
         clear && exec "$0"
         ;;
-      5)
+      3)
         gum style --foreground 7 "Installing Save Desktop Tool..."
         sleep 2
         echo
         flatpak install -y io.github.vikdevelop.SaveDesktop
         echo
         gum style --foreground 7 "All Done, Enjoy..."
-        sleep 3
-        clear && exec "$0"
-        ;;
-      a)
-        gum style --foreground 7 "Applying Adwaita GTK2 Patch..."
-        sleep 2
-        echo
-        $AUR_HELPER -S --noconfirm --needed adwaita-dark
-        echo
-        gum style --foreground 7 "GTK2 Patch applied..."
         sleep 3
         clear && exec "$0"
         ;;

@@ -23,15 +23,13 @@ display_menu() {
   echo
   gum style --foreground 46 "u. Update System (Simple/Extended/Adv.)."
   echo
-  gum style --foreground 7 "1. Fix PipeWire & Bluetooth (Vanilla Arch)."
-  gum style --foreground 7 "2. Activate Flathub Repositories (Vanilla Arch)."
-  gum style --foreground 7 "3. Enable Multithreaded Compilation (Vanilla Arch)."
-  gum style --foreground 7 "4. Install 3rd-Party GUI or TUI Package Manager(s)."
+  gum style --foreground 7 "1. Activate Flathub Repositories (Vanilla Arch)."
+  gum style --foreground 7 "2. Install 3rd-Party GUI or TUI Package Manager(s)."
+  gum style --foreground 7 "3. Enable Fingerprint Sensor(s) Service (KDE Only)."
+  gum style --foreground 7 "4. Change ParallelDownloads value for faster installs."
   echo
   gum style --foreground 122 "i. Download latest (official) Arch Linux ISO."
-  gum style --foreground 190 "f. Enable Fingerprint Auth. Service (KDE Only)."
-  gum style --foreground 39 "a. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
-  gum style --foreground 212 "p. Change ParallelDownloads value for faster installs."
+  gum style --foreground 39 "s. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
 }
 
 # Function to change parallel downloads
@@ -316,15 +314,13 @@ main() {
     echo
 
     case $CHOICE in
-      1) install_pipewire_bluetooth ;;
-      2) activate_flathub_repositories ;;
-      3) enable_multithreaded_compilation ;;
-      4) install_gui_package_managers ;;
+      1) activate_flathub_repositories ;;
+      2) install_gui_package_managers ;;
+      3) enable_fprintd ;;
+      4) parallel_downloads ;;
       i) download_latest_arch_iso ;;
-      f) enable_fprintd ;;
-      a) install_lmstudio ;;
+      s) install_lmstudio ;;
       u) update_system ;;
-      p) parallel_downloads ;;
       r) restart ;;
       q) clear && exec xero-cli -m ;;
       *)
