@@ -22,12 +22,15 @@ display_header() {
   gum style --foreground 141 "Hello $USER, please select an option."
   echo
 }
-
 # Function to display options
 display_options() {
+  gum style --foreground 40 ".::: Main Options :::."
+  echo
   gum style --foreground 7 "1. Setup Fastfetch (Vanilla Arch)."
   gum style --foreground 7 "2. Setup ZSH All in one with Oh-My-Posh/Plugs."
   gum style --foreground 7 "3. Install Save Desktop Config tool (KDE/Gnome)."
+  echo
+  gum style --foreground 226 ".::: Additional Options :::."
   echo
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
   gum style --foreground 200 "x. XeroLinux's Layan Rice (Vanilla KDE)."

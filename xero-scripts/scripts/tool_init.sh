@@ -14,22 +14,47 @@ if [ -z "$AUR_HELPER" ]; then
     exit 1
 fi
 
+# Helper functions to check if a package is installed
+is_pacman_installed() {
+    pacman -Q "$1" &>/dev/null
+}
+
+is_aur_installed() {
+    pacman -Qm "$1" &>/dev/null
+}
+
+is_flatpak_installed() {
+    flatpak list --app --columns=application | grep -wq "^$1$"
+}
+
+# Function to install AUR packages
+install_aur_packages() {
+    if [[ -z "$AUR_HELPER" || ! -x "$(command -v $AUR_HELPER)" ]]; then
+        gum style --foreground 196 "Error: AUR helper not defined or not found"
+        return 1
+    fi
+    $AUR_HELPER -S --noconfirm --needed "$@"
+}
+
 # Function to display the menu
 display_menu() {
   clear
   gum style --foreground 212 --border double --padding "1 1" --margin "1 1" --align center "Initial System Setup"
   echo
-  gum style --foreground 141 "Hello $USER, please select an option."
+  gum style --foreground 33 "Hello $USER, please select an option."
   echo
-  gum style --foreground 46 "u. Update System (Simple/Extended/Adv.)."
+  gum style --foreground 40 ".::: Main Options :::."
   echo
   gum style --foreground 7 "1. Activate Flathub Repositories (Vanilla Arch)."
   gum style --foreground 7 "2. Install 3rd-Party GUI or TUI Package Manager(s)."
-  gum style --foreground 7 "3. Enable Fingerprint Sensor(s) Service (KDE Only)."
-  gum style --foreground 7 "4. Change ParallelDownloads value for faster installs."
   echo
-  gum style --foreground 122 "i. Download latest (official) Arch Linux ISO."
-  gum style --foreground 39 "s. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
+  gum style --foreground 226 ".::: Additional Options :::."
+  echo
+  gum style --foreground 7 "u. Update System (Simple/Extended/Adv.)."
+  gum style --foreground 7 "i. Download latest (official) Arch Linux ISO."
+  gum style --foreground 7 "f. Enable Fingerprint Auth. Service (KDE Only)."
+  gum style --foreground 7 "a. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
+  gum style --foreground 7 "p. Change ParallelDownloads value for faster installs."
 }
 
 # Function to change parallel downloads
@@ -39,53 +64,6 @@ parallel_downloads() {
 }
 
 # Function for each task
-install_pipewire_bluetooth() {
-    # Check if running on XeroLinux
-    if grep -q "XeroLinux" /etc/os-release; then
-        gum style --foreground 49 "This option is already pre-configured."
-        echo
-        sleep 3
-        exec "$0"
-        return
-    fi
-
-    # Proceed with installation for Vanilla Arch
-    gum style --foreground 213 "Vanilla Arch Detected - Proceeding..."
-    echo
-    
-    gum style --foreground 35 "Installing PipeWire/Bluetooth Packages..."
-    echo
-    sleep 2
-
-    # Check if jack2 is installed
-    if pacman -Q jack2 &>/dev/null; then
-        gum style --foreground 6 "Removing jack2 package..."
-        sudo pacman -Rdd --noconfirm jack2
-    else
-        gum style --foreground 6 "jack2 package not found, skipping removal..."
-    fi
-    echo
-    
-    gum style --foreground 6 "Installing audio packages..."
-    sudo pacman -S --needed --noconfirm gstreamer gst-libav gst-plugins-bad gst-plugins-base \
-        gst-plugins-ugly gst-plugins-good libdvdcss alsa-utils alsa-firmware pavucontrol \
-        pipewire-jack lib32-pipewire-jack pipewire-support ffmpeg ffmpegthumbs ffnvcodec-headers
-    echo
-
-    gum style --foreground 6 "Installing Bluetooth packages..."
-    sudo pacman -S --needed --noconfirm bluez bluez-utils bluez-plugins bluez-hid2hci \
-        bluez-cups bluez-libs bluez-tools
-    echo
-
-    gum style --foreground 6 "Enabling Bluetooth service..."
-    sudo systemctl enable --now bluetooth.service
-    echo
-
-    gum style --foreground 2 "PipeWire/Bluetooth Packages installation complete!"
-    echo
-    sleep 3
-    exec "$0"
-}
 
 # Function to Enable Fingerprint Service
 enable_fprintd() {
@@ -128,32 +106,6 @@ activate_flathub_repositories() {
         gum style --foreground 7 "##########     Flatpak Overrides Activated     ##########"
         echo
         gum style --foreground 7 "Flathub Repositories activated! Please reboot."
-    sleep 3
-    exec "$0"
-}
-
-enable_multithreaded_compilation() {
-    # Check if running on XeroLinux
-    if grep -q "XeroLinux" /etc/os-release; then
-        gum style --foreground 49 "This option is already pre-configured."
-        echo
-        sleep 5
-        exec "$0"
-        return
-    fi
-
-    # Proceed with installation for Vanilla Arch
-    gum style --foreground 213 "Vanilla Arch Detected, Proceeding..."
-    sleep 2
-    echo
-    numberofcores=$(grep -c ^processor /proc/cpuinfo)
-    if [ "$numberofcores" -gt 1 ]; then
-        sudo sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$((numberofcores+1))\"/" /etc/makepkg.conf
-        sudo sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -z - --threads=0)/" /etc/makepkg.conf
-        sudo sed -i "s/COMPRESSZST=(zstd -c -z -q -)/COMPRESSZST=(zstd -c -z -q - --threads=0)/" /etc/makepkg.conf
-        sudo sed -i "s/PKGEXT='.pkg.tar.xz'/PKGEXT='.pkg.tar.zst'/" /etc/makepkg.conf
-    fi
-    gum style --foreground 7 "Multithreaded Compilation enabled!"
     sleep 3
     exec "$0"
 }
@@ -226,46 +178,95 @@ download_latest_arch_iso() {
     fi
 }
 
+# Function to display package selection dialog
+package_selection_dialog() {
+    local title=$1
+    shift
+    local options=("$@")
+    # Build a list of just the package names for gum choose
+    local pkg_names=()
+    for ((i=0; i<${#options[@]}; i+=3)); do
+        pkg_names+=("${options[i]}")
+    done
+    clear
+    echo
+    echo
+    echo -e "\e[36m[Space]\e[0m to select, \e[33m[ESC]\e[0m to go back & \e[32m[Enter]\e[0m to make it so."
+    echo
+    # Use gum choose for menu-style multi-select
+    PACKAGES=$(printf "%s\n" "${pkg_names[@]}" | gum choose --no-limit --header "$title" --cursor.foreground 212 --selected.background 236) || true
+
+    if [ -n "$PACKAGES" ]; then
+        PKG_DIALOG_EXITED=0
+        for PACKAGE in $PACKAGES; do
+            case $PACKAGE in
+                OctoPi)
+                    clear
+                    install_aur_packages octopi
+                    ;;
+                PacSeek)
+                    clear
+                    install_aur_packages pacseek pacfinder
+                    ;;
+                BauhGUI)
+                    clear
+                    install_aur_packages bauh
+                    ;;
+                Warehouse)
+                    clear
+                    flatpak install -y io.github.flattool.Warehouse
+                    ;;
+                Flatseal)
+                    clear
+                    flatpak install -y com.github.tchx84.Flatseal
+                    ;;
+                EasyFlatpak)
+                    clear
+                    flatpak install -y org.dupot.easyflatpak
+                    ;;
+                *)
+                    echo "Unknown package: $PACKAGE"
+                    ;;
+            esac
+        done
+    else
+        PKG_DIALOG_EXITED=1
+        clear
+        echo
+        echo
+        figlet -t -c "No packages selected. Returning to menu." | lolcat
+        sleep 10
+    fi
+}
+
 install_gui_package_managers() {
   gum style --foreground 7 "Installing 3rd-Party GUI Package Managers..."
   sleep 2
   echo
-
-  PACKAGES=$(dialog --checklist "Select GUI Package Managers to install:" 13 60 10 \
-    "OctoPi" "Octopi Package Manager" off \
-    "PacSeek" "PacSeek Package Manager" off \
-    "BauhGUI" "Bauh GUI Package Manager" off \
-    "Warehouse" "Flatpak management tool" off \
-    "Flatseal" "Flatpak Permissions tool" off \
-    "EasyFlatpak" "Flatpak Package Manager" off 6>&1 1>&2 2>&6)
-
-  if [[ $? -ne 0 ]]; then
-    echo "Error: Dialog exited with non-zero status. Aborting."
-    return 1
+  
+  # Build list of available packages (only those not already installed)
+  gui_pkg_options=()
+  
+  ! is_aur_installed octopi && gui_pkg_options+=("OctoPi" "OctoPi Package Manager" OFF)
+  ! is_aur_installed pacseek && ! is_aur_installed pacfinder && gui_pkg_options+=("PacSeek" "PacSeek Package Finder" OFF)
+  ! is_aur_installed bauh && gui_pkg_options+=("BauhGUI" "Bauh GUI Package Manager" OFF)
+  ! is_flatpak_installed io.github.flattool.Warehouse && gui_pkg_options+=("Warehouse" "Flatpak Package Manager" OFF)
+  ! is_flatpak_installed com.github.tchx84.Flatseal && gui_pkg_options+=("Flatseal" "Flatpak Permission Manager" OFF)
+  ! is_flatpak_installed org.dupot.easyflatpak && gui_pkg_options+=("EasyFlatpak" "Easy Flatpak Manager" OFF)
+  
+  if [ ${#gui_pkg_options[@]} -eq 0 ]; then
+    gum style --foreground 7 "All GUI package managers are already installed."
+    sleep 3
+    clear && exec "$0"
+  else
+    package_selection_dialog "Select GUI Package Managers to install:" "${gui_pkg_options[@]}"
+    if [ "${PKG_DIALOG_EXITED:-0}" -eq 0 ]; then
+      echo
+      gum style --foreground 7 "##########  Done ! ##########"
+      sleep 3
+    fi
+    clear && exec "$0"
   fi
-
-  # Process each package individually
-  if [[ "$PACKAGES" == *"OctoPi"* ]]; then
-    clear && $AUR_HELPER -S --noconfirm --needed octopi || echo "Error installing OctoPi"
-  fi
-  if [[ "$PACKAGES" == *"PacSeek"* ]]; then
-    clear && $AUR_HELPER -S --noconfirm --needed pacseek pacfinder || echo "Error installing PacSeek"
-  fi
-  if [[ "$PACKAGES" == *"BauhGUI"* ]]; then
-    clear && $AUR_HELPER -S --noconfirm --needed bauh || echo "Error installing BauhGUI"
-  fi
-  if [[ "$PACKAGES" == *"Warehouse"* ]]; then
-    clear && flatpak install -y io.github.flattool.Warehouse || echo "Error installing Warehouse"
-  fi
-  if [[ "$PACKAGES" == *"Flatseal"* ]]; then
-    clear && flatpak install -y com.github.tchx84.Flatseal || echo "Error installing Flatseal"
-  fi
-  if [[ "$PACKAGES" == *"EasyFlatpak"* ]]; then
-    clear && flatpak install -y org.dupot.easyflatpak || echo "Error installing EasyFlatpak"
-  fi
-
-  gum style --foreground 7 "3rd-Party GUI Package Managers installation complete!"
-  sleep 3
 }
 
 install_lmstudio() {
@@ -316,11 +317,11 @@ main() {
     case $CHOICE in
       1) activate_flathub_repositories ;;
       2) install_gui_package_managers ;;
-      3) enable_fprintd ;;
-      4) parallel_downloads ;;
       i) download_latest_arch_iso ;;
-      s) install_lmstudio ;;
+      f) enable_fprintd ;;
+      a) install_lmstudio ;;
       u) update_system ;;
+      p) parallel_downloads ;;
       r) restart ;;
       q) clear && exec xero-cli -m ;;
       *)

@@ -26,11 +26,15 @@ display_header() {
 
 # Function to display options
 display_options() {
+    gum style --foreground 40 ".::: Main Options :::."
+    echo
     gum style --foreground 85 "1. GPU Drivers (Intel/AMD/nVidia)."
     gum style --foreground 7 "2. Printer Drivers (Vanilla Arch)."
     gum style --foreground 7 "3. Setup Tailscale Incl. fix for XeroLinux."
     gum style --foreground 7 "4. DeckLink & StreamDeck Drivers/Tools (AUR)."
     gum style --foreground 7 "5. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
+    echo
+    gum style --foreground 226 ".::: Additional Options :::."
     echo
     gum style --foreground 196 "k. Install Arch Kernel Manager Tool (XeroLinux Repo)."
 }

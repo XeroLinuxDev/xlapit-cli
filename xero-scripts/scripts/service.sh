@@ -22,12 +22,16 @@ display_menu() {
     echo
     gum style --foreground 141 "Hello $USER, what would you like to do today?"
     echo
+    gum style --foreground 40 ".::: Main Options :::."
+    echo
     gum style --foreground 7 "1. Install & Activate Firewalld."
     gum style --foreground 7 "2. Clear Pacman Cache (Free Space)."
     gum style --foreground 7 "3. Unlock Pacman DB (In case of DB error)."
     gum style --foreground 7 "4. Activate v4l2loopback for OBS-VirtualCam."
     gum style --foreground 7 "5. Install & Enable Plasma X11 Session (KDE)."
     gum style --foreground 7 "6. Disable Debug flag in MAKEPKG (Package Devs)."
+    echo
+    gum style --foreground 226 ".::: Additional Options :::."
     echo
     gum style --foreground 39 "a. Build Updated Arch ISO."
     gum style --foreground 196 "s. Reset KDE/Xero Layout back to Stock."

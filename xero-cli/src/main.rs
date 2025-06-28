@@ -186,7 +186,7 @@ fn main() -> std::process::ExitCode {
                 piglog::info!("AUR helper selected: {}", helper.bright_yellow().bold());
                 println!("         App Version: {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
                 println!("[Creds]: ");
-                println!("         {} - Maintenance.", "ToneKneeo".green().bold());
+                println!("         {} - Maintenance.", "tonekneeo".green().bold());
                 println!("         {}     - Testing.", "SMOKΞ".blue().bold());
                 println!("");
             },
@@ -209,8 +209,13 @@ fn main() -> std::process::ExitCode {
         // Modified selection handling
         let mut selected: Option<usize> = None;
         while selected == None {
-            let answer = prompt("Please select option (Close Window to exit).");
+            let answer = prompt("Please select option (q to exit).");
             let answer = answer.trim();
+
+            if answer.eq_ignore_ascii_case("q") {
+                // Exit immediately when q is pressed
+                std::process::exit(0);
+            }
 
             if answer.eq_ignore_ascii_case("x") {
                 // Exit immediately when X is pressed
@@ -274,7 +279,8 @@ fn get_package_version() -> Option<String> {
 }
 
 fn select_aur_helper(aur_helper: &str) {
-    std::env::set_var("AUR_HELPER", aur_helper);
+    let aur_helper_with_flags = format!("{} --mflags --skipinteg", aur_helper);
+    std::env::set_var("AUR_HELPER", aur_helper_with_flags);
 }
 
 fn detect_aur_helper() -> Option<String> {
