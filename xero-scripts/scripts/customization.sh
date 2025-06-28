@@ -14,6 +14,11 @@ if [ -z "$AUR_HELPER" ]; then
     exit 1
 fi
 
+# Function to detect if running on XeroLinux
+is_xerolinux() {
+    grep -q "XeroLinux" /etc/os-release
+}
+
 # Function to display header
 display_header() {
   clear
@@ -26,9 +31,19 @@ display_header() {
 display_options() {
   gum style --foreground 40 ".::: Main Options :::."
   echo
-  gum style --foreground 7 "1. Setup Fastfetch (Vanilla Arch)."
-  gum style --foreground 7 "2. Setup ZSH All in one with Oh-My-Posh/Plugs."
-  gum style --foreground 7 "3. Install Save Desktop Config tool (KDE/Gnome)."
+  
+  # Dynamic numbering for visible options
+  local option_number=1
+  
+  # Only show "(Vanilla Arch)" option if not running XeroLinux
+  if ! is_xerolinux; then
+    gum style --foreground 7 "${option_number}. Setup Fastfetch (Vanilla Arch)."
+    ((option_number++))
+  fi
+  
+  gum style --foreground 7 "${option_number}. Setup ZSH All in one with Oh-My-Posh/Plugs."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Install Save Desktop Config tool (KDE/Gnome)."
   echo
   gum style --foreground 226 ".::: Additional Options :::."
   echo
@@ -56,15 +71,27 @@ process_choice() {
     read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
     echo
 
-    case $CHOICE in
-      1)
-        # Check if running on XeroLinux
-        if grep -q "XeroLinux" /etc/os-release; then
-          gum style --foreground 49 "Fastfetch is already pre-configured on XeroLinux !"
-          sleep 5
-          clear && exec "$0"
-        fi
+    # Map user choice to actual option based on what's visible
+    local actual_choice=""
+    if ! is_xerolinux; then
+      # On vanilla Arch: 1=fastfetch, 2=zsh, 3=save_desktop
+      case $CHOICE in
+        1) actual_choice="fastfetch" ;;
+        2) actual_choice="zsh" ;;
+        3) actual_choice="save_desktop" ;;
+        *) actual_choice="$CHOICE" ;;
+      esac
+    else
+      # On XeroLinux: 1=zsh, 2=save_desktop (since fastfetch is hidden)
+      case $CHOICE in
+        1) actual_choice="zsh" ;;
+        2) actual_choice="save_desktop" ;;
+        *) actual_choice="$CHOICE" ;;
+      esac
+    fi
 
+    case $actual_choice in
+      fastfetch)
         gum style --foreground 7 "Setting up Fastfetch..."
         sleep 2
         echo
@@ -124,7 +151,7 @@ process_choice() {
         sleep 3
         clear && exec "$0"
         ;;
-      2)
+      zsh)
         gum style --foreground 7 "Setting up ZSH with OMP & OMZ Plugins..."
         sleep 2
         echo
@@ -173,7 +200,7 @@ process_choice() {
         sleep 3
         clear && exec "$0"
         ;;
-      3)
+      save_desktop)
         gum style --foreground 7 "Installing Save Desktop Tool..."
         sleep 2
         echo
@@ -196,7 +223,7 @@ process_choice() {
         ;;
       x)
         # Check if running on XeroLinux
-        if grep -q "XeroLinux" /etc/os-release; then
+        if is_xerolinux; then
           gum style --foreground 49 "Rice already installed or not on KDE !"
           sleep 5
           clear && exec "$0"

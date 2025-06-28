@@ -6,6 +6,11 @@ trap 'clear && exec "$0"' INT
 
 SCRIPTS="/usr/share/xero-scripts/"
 
+# Function to detect if running on XeroLinux
+is_xerolinux() {
+    grep -q "XeroLinux" /etc/os-release
+}
+
 # Check if being run from xero-cli
 # if [ -z "$AUR_HELPER" ]; then
 #     echo
@@ -26,16 +31,33 @@ display_header() {
 
 # Function to display options
 display_options() {
-  gum style --foreground 7 "1. LibreOffice."
-  gum style --foreground 7 "2. Web Browsers."
-  gum style --foreground 7 "3. Development Tools."
-  gum style --foreground 7 "4. Photo and 3D Tools."
-  gum style --foreground 7 "5. Music & Audio Tools."
-  gum style --foreground 7 "6. Social & Chat Tools."
-  gum style --foreground 7 "7. Virtualization Tools."
-  gum style --foreground 7 "8. Video Tools & Software."
-  gum style --foreground 7 "9. DaVinci Resolve (Free/Studio)."
-  gum style --foreground 7 "10. Various System Tools (Vanilla Arch)."
+  # Dynamic numbering for visible options
+  local option_number=1
+  
+  gum style --foreground 7 "${option_number}. LibreOffice."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Web Browsers."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Development Tools."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Photo and 3D Tools."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Music & Audio Tools."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Social & Chat Tools."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Virtualization Tools."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. Video Tools & Software."
+  ((option_number++))
+  gum style --foreground 7 "${option_number}. DaVinci Resolve (Free/Studio)."
+  ((option_number++))
+  # Only show "(Vanilla Arch)" option if not running XeroLinux
+  if ! is_xerolinux; then
+    gum style --foreground 7 "${option_number}. Various System Tools (Vanilla Arch)."
+  else
+    gum style --foreground 7 "${option_number}. Various System Tools."
+  fi
 }
 
 # Function to install packages using pacman
@@ -372,8 +394,41 @@ process_choice() {
     read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
     echo
 
-    case $CHOICE in
-      1)
+    # Map user choice to actual option based on what's visible
+    local actual_choice=""
+    if ! is_xerolinux; then
+      # On vanilla Arch: 1=libreoffice, 2=browsers, 3=dev, 4=photo, 5=music, 6=social, 7=virt, 8=video, 9=davinci, 10=system_tools
+      case $CHOICE in
+        1) actual_choice="libreoffice" ;;
+        2) actual_choice="browsers" ;;
+        3) actual_choice="dev" ;;
+        4) actual_choice="photo" ;;
+        5) actual_choice="music" ;;
+        6) actual_choice="social" ;;
+        7) actual_choice="virt" ;;
+        8) actual_choice="video" ;;
+        9) actual_choice="davinci" ;;
+        10) actual_choice="system_tools" ;;
+        *) actual_choice="$CHOICE" ;;
+      esac
+    else
+      # On XeroLinux: 1=libreoffice, 2=browsers, 3=dev, 4=photo, 5=music, 6=social, 7=virt, 8=video, 9=davinci (since system_tools is hidden)
+      case $CHOICE in
+        1) actual_choice="libreoffice" ;;
+        2) actual_choice="browsers" ;;
+        3) actual_choice="dev" ;;
+        4) actual_choice="photo" ;;
+        5) actual_choice="music" ;;
+        6) actual_choice="social" ;;
+        7) actual_choice="virt" ;;
+        8) actual_choice="video" ;;
+        9) actual_choice="davinci" ;;
+        *) actual_choice="$CHOICE" ;;
+      esac
+    fi
+
+    case $actual_choice in
+      libreoffice)
         sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
         install_aur_packages ttf-gentium-basic hsqldb2-java libreoffice-extension-languagetool
         echo
@@ -381,7 +436,7 @@ process_choice() {
         sleep 3
         clear && exec "$0"
         ;;
-      2)
+      browsers)
         # Browsers
         browser_options=()
         ! is_pacman_installed brave-bin && browser_options+=("Brave" "The web browser from Brave" OFF)
@@ -407,7 +462,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      3)
+      dev)
         # Development Tools
         dev_options=()
         ! is_flatpak_installed com.google.AndroidStudio && dev_options+=("AndroidStudio" "IDE for Android app development" OFF)
@@ -434,7 +489,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      4)
+      photo)
         # Photo and 3D Tools
         photo_options=()
         ! is_flatpak_installed org.gimp.GIMP && photo_options+=("GiMP" "GNU Image Manipulation Program" OFF)
@@ -455,7 +510,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      5)
+      music)
         # Music & Media Tools
         music_options=()
         ! is_pacman_installed mpv && music_options+=("MPV" "An OpenSource media player" OFF)
@@ -478,7 +533,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      6)
+      social)
         # Social & Chat Tools
         social_options=()
         ! is_flatpak_installed io.github.equicord.equibop && social_options+=("Equibop" "Snappier Discord app with Equicord" OFF)
@@ -503,7 +558,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      7)
+      virt)
         # Virtualization Tools
         virt_options=()
         ! is_pacman_installed virt-manager-meta && virt_options+=("VirtManager" "QEMU virtual machines" OFF)
@@ -544,7 +599,7 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      8)
+      video)
         # Video Tools & Software
         video_options=()
         ! is_pacman_installed kdenlive && video_options+=("KDEnLive" "A non-linear video editor" OFF)
@@ -568,11 +623,11 @@ process_choice() {
         fi
         clear && exec "$0"
         ;;
-      9)
+      davinci)
         bash -c "$(curl -fsSL https://xerolinux.xyz/script/davinci.sh)"
         clear && exec "$0"
         ;;
-      10)
+      system_tools)
         gum style --foreground 7 "########## Installing Recommended Tools ##########"
         echo
         gum style --foreground 200 "Be patient while this installs the many recommended packages..."

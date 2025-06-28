@@ -15,6 +15,11 @@ fi
 
 SCRIPTS="/usr/share/xero-scripts/"
 
+# Function to detect if running on XeroLinux
+is_xerolinux() {
+    grep -q "XeroLinux" /etc/os-release
+}
+
 # Function to display header
 display_header() {
     clear
@@ -28,11 +33,24 @@ display_header() {
 display_options() {
     gum style --foreground 40 ".::: Main Options :::."
     echo
-    gum style --foreground 85 "1. GPU Drivers (Intel/AMD/nVidia)."
-    gum style --foreground 7 "2. Printer Drivers (Vanilla Arch)."
-    gum style --foreground 7 "3. Setup Tailscale Incl. fix for XeroLinux."
-    gum style --foreground 7 "4. DeckLink & StreamDeck Drivers/Tools (AUR)."
-    gum style --foreground 7 "5. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
+    
+    # Dynamic numbering for visible options
+    local option_number=1
+    
+    gum style --foreground 85 "${option_number}. GPU Drivers (Intel/AMD/nVidia)."
+    ((option_number++))
+    
+    # Only show "(Vanilla Arch)" option if not running XeroLinux
+    if ! is_xerolinux; then
+        gum style --foreground 7 "${option_number}. Printer Drivers (Vanilla Arch)."
+        ((option_number++))
+    fi
+    
+    gum style --foreground 7 "${option_number}. Setup Tailscale Incl. fix for XeroLinux."
+    ((option_number++))
+    gum style --foreground 7 "${option_number}. DeckLink & StreamDeck Drivers/Tools (AUR)."
+    ((option_number++))
+    gum style --foreground 7 "${option_number}. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
     echo
     gum style --foreground 226 ".::: Additional Options :::."
     echo
@@ -163,33 +181,53 @@ process_choice() {
     while :; do
         echo
         read -rp "Enter your choice, 'r' to reboot or 'q' for main menu : " CHOICE
-        case $CHOICE in
-            1) prompt_user && sleep 3 && clear && exec "$0" ;;
-            2)
-                if grep -q "XeroLinux" /etc/os-release; then
-                    gum style --foreground 49 "Printer Drivers already installed!"
-                else
-                    gum style --foreground 7 "Installing Printer Drivers..."
-                    sudo pacman -S --needed --noconfirm ghostscript gsfonts cups cups-filters cups-pdf system-config-printer avahi foomatic-db-engine foomatic-db foomatic-db-ppds foomatic-db-nonfree foomatic-db-nonfree-ppds gutenprint python-pyqt5
-                    sudo systemctl enable --now avahi-daemon cups.socket
-                    sudo usermod -aG sys,lp,cups "$(whoami)"
-                    gum style --foreground 7 "Printer setup complete!"
-                fi
+        
+        # Map user choice to actual option based on what's visible
+        local actual_choice=""
+        if ! is_xerolinux; then
+            # On vanilla Arch: 1=gpu, 2=printer, 3=tailscale, 4=decklink, 5=asus
+            case $CHOICE in
+                1) actual_choice="gpu" ;;
+                2) actual_choice="printer" ;;
+                3) actual_choice="tailscale" ;;
+                4) actual_choice="decklink" ;;
+                5) actual_choice="asus" ;;
+                *) actual_choice="$CHOICE" ;;
+            esac
+        else
+            # On XeroLinux: 1=gpu, 2=tailscale, 3=decklink, 4=asus (since printer is hidden)
+            case $CHOICE in
+                1) actual_choice="gpu" ;;
+                2) actual_choice="tailscale" ;;
+                3) actual_choice="decklink" ;;
+                4) actual_choice="asus" ;;
+                *) actual_choice="$CHOICE" ;;
+            esac
+        fi
+        
+        case $actual_choice in
+            gpu) prompt_user && sleep 3 && clear && exec "$0" ;;
+            printer)
+                gum style --foreground 7 "Installing Printer Drivers..."
+                sudo pacman -S --needed --noconfirm ghostscript gsfonts cups cups-filters cups-pdf system-config-printer avahi foomatic-db-engine foomatic-db foomatic-db-ppds foomatic-db-nonfree foomatic-db-nonfree-ppds gutenprint python-pyqt5
+                sudo systemctl enable --now avahi-daemon cups.socket
+                sudo usermod -aG sys,lp,cups "$(whoami)"
+                gum style --foreground 7 "Printer setup complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
-            3)
+            tailscale)
                 gum style --foreground 7 "Installing Tailscale..."
                 bash -c "$(curl -fsSL https://raw.githubusercontent.com/xerolinux/xero-fixes/main/conf/install.sh)"
                 gum style --foreground 7 "Tailscale setup complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
-            4)
+            decklink)
                 gum style --foreground 7 "Installing DeckLink & StreamDeck..."
                 package_selection_dialog "Decklink DeckMaster StreamDeckUI" "install_aur_packages"
                 gum style --foreground 7 "Installation complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
-            5)
+            asus)
                 gum style --foreground 7 "Installing ASUS ROG Tools..."
                 install_aur_packages rog-control-center asusctl supergfxctl
                 sudo systemctl enable --now asusd supergfxd

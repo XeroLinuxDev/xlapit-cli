@@ -181,10 +181,11 @@ fn main() -> std::process::ExitCode {
 
         // Make sure there is an AUR helper on the system and show version
         let version_str = get_package_version().unwrap_or_default();
+        let distro_name = get_distro_name();
         match detect_aur_helper() {
             Some(helper) => {
-                piglog::info!("AUR helper selected: {}", helper.bright_yellow().bold());
-                println!("         App Version: {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
+                piglog::info!("AUR helper : {} / Distro : {}", helper.bright_green().bold(), distro_name.magenta().bold());
+                println!("         App/TUI Build Number : {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
                 println!("[Creds]: ");
                 println!("         {} - Maintenance.", "tonekneeo".green().bold());
                 println!("         {}     - Testing.", "SMOKΞ".blue().bold());
@@ -194,8 +195,6 @@ fn main() -> std::process::ExitCode {
         };
 
         println!("Welcome, {username}! What would you like to do today?\n");
-        println!("Note: Options labeled with (Vanilla Arch) are not required on XeroLinux.");
-        println!("");
 
         for (i, j) in options.iter().enumerate() {
             let prefix = &(i + 1).to_string();
@@ -272,6 +271,34 @@ fn get_package_version() -> Option<String> {
             }
         }
         None
+}
+
+fn get_distro_name() -> String {
+    let os_release = match file::read(&fspp::Path::new("/etc/os-release")) {
+        Ok(o) => o,
+        Err(_) => return "Unknown".to_string(),
+    };
+
+    for line in os_release.trim().lines() {
+        let check = line.trim().replace(" ", "").replace("\"", "");
+        
+        if check.starts_with("PRETTY_NAME=") {
+            let pretty_name = check.replace("PRETTY_NAME=", "").trim().to_string();
+            return pretty_name;
+        }
+    }
+
+    // Fallback to ID if PRETTY_NAME is not found
+    for line in os_release.trim().lines() {
+        let check = line.trim().replace(" ", "").replace("\"", "");
+        
+        if check.starts_with("ID=") {
+            let id = check.replace("ID=", "").trim().to_string();
+            return id.to_uppercase();
+        }
+    }
+
+    "Unknown".to_string()
 }
 
 fn select_aur_helper(aur_helper: &str) {
