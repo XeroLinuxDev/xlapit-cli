@@ -209,16 +209,11 @@ fn main() -> std::process::ExitCode {
         // Modified selection handling
         let mut selected: Option<usize> = None;
         while selected == None {
-            let answer = prompt("Please select option (q to exit).");
+            let answer = prompt("Please select option (x to exit).");
             let answer = answer.trim();
 
-            if answer.eq_ignore_ascii_case("q") {
-                // Exit immediately when q is pressed
-                std::process::exit(0);
-            }
-
             if answer.eq_ignore_ascii_case("x") {
-                // Exit immediately when X is pressed
+                // Exit immediately when x is pressed
                 std::process::exit(0);
             }
 
@@ -243,7 +238,8 @@ fn main() -> std::process::ExitCode {
         let option = options.get(selected).unwrap();
 
         user_run_script(&option.1.script_name());
-        clear_terminal();
+        // Exit the program after running a script - the script will handle returning to main menu
+        std::process::exit(0);
     }
 }
 
