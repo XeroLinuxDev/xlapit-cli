@@ -115,7 +115,7 @@ prompt_user() {
                         fi
                     fi
                     echo "Updating Grub"
-                    grub-mkconfig -o /boot/grub/grub.cfg
+                    sudo grub-mkconfig -o /boot/grub/grub.cfg
                 fi
                 # MKINITCPIO crap
                 REQUIRED_MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
