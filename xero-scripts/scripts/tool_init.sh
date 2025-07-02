@@ -74,7 +74,14 @@ display_menu() {
 # Function to change parallel downloads
 parallel_downloads() {
   sudo pmpd
-  clear && exec "$0"
+  sudo -K
+  # If running as root, re-exec as the original user; otherwise, just restart the script
+  if [ "$EUID" -eq 0 ] && [ -n "$SUDO_USER" ]; then
+    su "$SUDO_USER" -c "$0"
+    exit
+  else
+    clear && exec "$0"
+  fi
 }
 
 # Function for each task

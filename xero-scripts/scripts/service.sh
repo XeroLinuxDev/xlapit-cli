@@ -34,7 +34,7 @@ display_menu() {
     gum style --foreground 226 ".::: Additional Options :::."
     echo
     gum style --foreground 39 "a. Build Updated Arch ISO."
-    gum style --foreground 39 "f. Fix GPGME: NODATA database issue."
+    gum style --foreground 150 "f. Fix GPGME: NODATA database issue."
     gum style --foreground 196 "s. Reset KDE/Xero Layout back to Stock."
     gum style --foreground 40 "w. WayDroid Installation Guide (Website Link)."
     gum style --foreground 51 "v. Install VM Guest utils/agent (All/Vanilla Arch)."

@@ -59,44 +59,81 @@ display_options() {
   gum style --foreground 196 "Note : Flatpaks = Official, Native = Unofficial."
 }
 
-# Function to display package selection dialog
-package_selection_dialog() {
+# Helper functions to check if a package is installed
+is_pacman_installed() {
+    pacman -Q "$1" &>/dev/null
+}
+
+is_aur_installed() {
+    pacman -Qm "$1" &>/dev/null
+}
+
+# Function to display package selection dialog for controllers (gum-based)
+controller_selection_dialog() {
     local title=$1
     shift
     local options=("$@")
-    PACKAGES=$(dialog --checklist "$title" 20 60 10 "${options[@]}" 3>&1 1>&2 2>&3)
+    local controller_options=()
+
+    # Only add options for drivers that are not installed
+    ! is_aur_installed dualsensectl && controller_options+=("DualSense" "DualSense Driver" OFF)
+    ! is_aur_installed ds4drv && controller_options+=("DualShock4" "DualShock 4 Driver" OFF)
+    ! is_aur_installed xone-dkms && controller_options+=("XBoxOne" "XBOX One Controller Driver" OFF)
+
+    if [ ${#controller_options[@]} -eq 0 ]; then
+        gum style --foreground 7 "All supported game controller drivers are already installed."
+        sleep 3
+        return
+    fi
+
+    # Build a list of just the package names for gum choose
+    local pkg_names=()
+    for ((i=0; i<${#controller_options[@]}; i+=3)); do
+        pkg_names+=("${controller_options[i]}")
+    done
+    clear
+    echo
+    echo -e "\e[36m[Space]\e[0m to select, \e[33m[ESC]\e[0m to go back & \e[32m[Enter]\e[0m to make it so."
+    echo
+    # Use gum choose for menu-style multi-select
+    PACKAGES=$(printf "%s\n" "${pkg_names[@]}" | gum choose --no-limit --header "$title" --cursor.foreground 212 --selected.background 236) || true
 
     if [ -n "$PACKAGES" ]; then
         for PACKAGE in $PACKAGES; do
             case $PACKAGE in
                 DualSense)
+                    clear
                     install_aur_packages dualsensectl game-devices-udev
-                    sleep 3
-                    echo "_:: Please follow guide on Github for configuration ::_"
-                    sleep 3
+                    gum style --foreground 7 "_:: Please follow guide on Github for configuration ::_"
+                    sleep 2
                     xdg-open "https://github.com/nowrep/dualsensectl"  > /dev/null 2>&1
                     ;;
                 DualShock4)
+                    clear
                     install_aur_packages ds4drv game-devices-udev
-                    sleep 3
-                    echo "_:: Please follow guide on Github for configuration ::_"
-                    sleep 3
+                    gum style --foreground 7 "_:: Please follow guide on Github for configuration ::_"
+                    sleep 2
                     xdg-open "https://github.com/chrippa/ds4drv"  > /dev/null 2>&1
                     ;;
                 XBoxOne)
+                    clear
                     install_aur_packages xone-dkms game-devices-udev
-                    sleep 3
-                    echo "_:: Please follow guide on Github for configuration ::_"
-                    sleep 3
+                    gum style --foreground 7 "_:: Please follow guide on Github for configuration ::_"
+                    sleep 2
                     xdg-open "https://github.com/medusalix/xone"  > /dev/null 2>&1
                     ;;
                 *)
-                    echo "Unknown package: $PACKAGE"
+                    gum style --foreground 196 "Unknown package: $PACKAGE"
                     ;;
             esac
         done
     else
-        echo "No packages selected."
+        PKG_DIALOG_EXITED=1
+        clear
+        echo
+        echo
+        figlet -t -c "No packages selected. Returning to menu." | lolcat
+        sleep 10
     fi
 }
 
@@ -158,11 +195,10 @@ process_choice() {
         clear && exec "$0"
         ;;
       2)
-        package_selection_dialog "Select Controller Driver to install:" \
-        "DualSense" "DualSence Driver" OFF \
+        controller_selection_dialog "Select Controller Driver(s) to install:" \
+        "DualSense" "DualSense Driver" OFF \
         "DualShock4" "DualShock 4 Driver" OFF \
         "XBoxOne" "XBOX One Controller Driver" OFF
-        gum style --foreground 7 "Game Controller Drivers installation complete!"
         sleep 3
         clear && exec "$0"
         ;;
