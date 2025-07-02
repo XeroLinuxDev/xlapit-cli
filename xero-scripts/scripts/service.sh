@@ -34,6 +34,7 @@ display_menu() {
     gum style --foreground 226 ".::: Additional Options :::."
     echo
     gum style --foreground 39 "a. Build Updated Arch ISO."
+    gum style --foreground 39 "f. Fix GPGME: NODATA database issue."
     gum style --foreground 196 "s. Reset KDE/Xero Layout back to Stock."
     gum style --foreground 40 "w. WayDroid Installation Guide (Website Link)."
     gum style --foreground 51 "v. Install VM Guest utils/agent (All/Vanilla Arch)."
@@ -144,6 +145,18 @@ build_archiso() {
     echo
     gum style --foreground 7 "########## Done ! Check ~/ArchOut ##########"
     sleep 6
+    main
+}
+
+gpgme_error() {
+    echo
+    gum style --foreground 7 "########## Fixing GPGME Issue ##########"
+    echo
+    sudo rm -R /var/lib/pacman/sync && sudo pacman -Syy
+    echo
+    sudo -K
+    gum style --foreground 7 "########## All Done, Enjoy! ##########"
+    sleep 3
     main
 }
 
@@ -288,6 +301,7 @@ main() {
            5) x11_session ;;
            6) disable_debug ;;
            a) build_archiso ;;
+           f) gpgme_error ;;
            s) reset_everything ;;
            w) waydroid_guide ;;
            v) vm_guest ;;
