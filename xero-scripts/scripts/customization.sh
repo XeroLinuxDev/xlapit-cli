@@ -48,6 +48,10 @@ display_options() {
   gum style --foreground 226 ".::: Additional Options :::."
   echo
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
+  if ! is_xerolinux; then
+    gum style --foreground 200 "x. XeroLinux's Layan Rice (Vanilla KDE)."
+    gum style --foreground 120 "z. Apply XeroLinux Gnome Settings (Vanilla Gnome)."
+  fi
   gum style --foreground 225 "w. Install more Plasma Wallpapers (~1.2gb)."
   gum style --foreground 153 "u. Layan GTK4 Patch & Update (Xero-KDE Only)."
 }
@@ -219,6 +223,23 @@ process_choice() {
         sleep 3
         clear && exec "$0"
         ;;
+      x)
+        gum style --foreground 200 "Setting up XeroLinux KDE Rice..."
+        sleep 2
+        echo
+        cd ~ && git clone https://github.com/xerolinux/xero-layan-git.git
+        cd ~/xero-layan-git/ && sh install.sh
+        echo
+        gum style --foreground 200 "XeroLinux KDE Rice setup complete!"
+        sleep 3
+        # Countdown from 15 to 1
+        for i in {15..1}; do
+            dialog --infobox "Rebooting in $i seconds..." 3 30
+            sleep 1
+        done
+        reboot
+        sleep 3
+        ;;
       w)
         gum style --foreground 7 "Downloading Extra KDE Wallpapers..."
         sleep 2
@@ -245,6 +266,36 @@ process_choice() {
         cd ~ && rm -Rf Layan-kde/
         echo
         gum style --foreground 200 "GTK4 Pacthing & Update Complete!"
+        sleep 3
+        clear && exec "$0"
+        ;;
+      z)
+        gum style --foreground 7 "Grabbing Packages..."
+        sleep 2
+        echo
+        $AUR_HELPER -S --noconfirm --needed ptyxis pacseek btop gparted flatseal awesome-terminal-fonts extension-manager gnome-shell-extension-arc-menu gnome-shell-extension-caffeine gnome-shell-extension-gsconnect gnome-shell-extension-arch-update gnome-shell-extension-blur-my-shell gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock gnome-shell-extension-weather-oclock chafa nautilus-share nautilus-compare nautilus-admin-gtk4 nautilus-image-converter libappindicator-gtk3 tela-circle-icon-theme-purple kvantum-theme-libadwaita-git qt5ct qt6ct kvantum fastfetch adw-gtk-theme oh-my-posh-bin ttf-fira-code guake desktop-config-gnome
+        sleep 3
+        echo
+        gum style --foreground 7 "Applying Xero Gnome Settings..."
+        echo
+        cp -Rf /etc/skel/. ~
+        sleep 2
+        sudo mkdir -p /usr/share/defaultbg && sudo cp /home/xero/.local/share/backgrounds/Xero-G69.png /usr/share/defaultbg/XeroG.png
+        sleep 2
+        dconf load /org/gnome/ < /etc/skel/.config/xero-dconf.conf
+        sleep 1.5
+        dconf load /com/github/stunkymonkey/nautilus-open-any-terminal/ < /etc/skel/.config/term.conf
+        sleep 1.5
+        guake --restore-preferences=$HOME/.config/guake-prefs.cfg
+        sleep 1.5
+        dconf load /org/gnome/Ptyxis/ < /etc/skel/.config/Ptyxis.conf
+        sleep 1.5
+        dconf write /org/gnome/Ptyxis/Profiles/a8419c1b5f17fef263add7d367cd68cf/opacity 0.85
+        rm ~/.config/autostart/dconf-load.desktop
+        sleep 2
+        cd ~ && mv .bashrc .bashrc.bk && wget https://raw.githubusercontent.com/XeroLinuxDev/xero-build/refs/heads/main/XeroG/airootfs/etc/skel/.bashrc
+        echo
+        gum style --foreground 7 "Settings applied, please reboot..."
         sleep 3
         clear && exec "$0"
         ;;
