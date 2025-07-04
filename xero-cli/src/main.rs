@@ -185,7 +185,7 @@ fn main() -> std::process::ExitCode {
         match detect_aur_helper() {
             Some(helper) => {
                 piglog::info!("AUR helper : {} / Distro : {}", helper.bright_green().bold(), distro_name.magenta().bold());
-                println!("         App/TUI Build Number : {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
+                println!("         App/TUI Build Version : {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
                 println!("[Creds]: ");
                 println!("         {} - Maintenance.", "tonekneeo".green().bold());
                 println!("         {}     - Testing.", "SMOKΞ".blue().bold());
