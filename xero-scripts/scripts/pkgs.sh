@@ -12,14 +12,14 @@ is_xerolinux() {
 }
 
 # Check if being run from xero-cli
-# if [ -z "$AUR_HELPER" ]; then
-#     echo
-#     gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
-#     echo
-#     gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli -m')"
-#     echo
-#     exit 1
-# fi
+if [ -z "$AUR_HELPER" ]; then
+    echo
+    gum style --border double --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 196 "$(gum style --foreground 196 'ERROR: This script must be run through the toolkit.')"
+    echo
+    gum style --border normal --align center --width 70 --margin "1 2" --padding "1 2" --border-foreground 33 "$(gum style --foreground 33 'Or use this command instead:') $(gum style --bold --foreground 47 'clear && xero-cli')"
+    echo
+    exit 1
+fi
 
 # Function to display header
 display_header() {
@@ -430,7 +430,6 @@ process_choice() {
     case $actual_choice in
       libreoffice)
         sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
-        install_aur_packages ttf-gentium-basic hsqldb2-java libreoffice-extension-languagetool
         echo
         gum style --foreground 7 "##########  Done, Please Reboot !  ##########"
         sleep 3
@@ -653,7 +652,7 @@ process_choice() {
         sleep 3
         ;;
       q)
-        clear && exec xero-cli -m
+        clear && exec xero-cli
         ;;
       *)
         gum style --foreground 50 "Invalid choice. Please select a valid option."

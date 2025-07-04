@@ -1,10 +1,9 @@
-#!/usr/bin/env xdg-open
 [Desktop Entry]
 Terminal=true
 Type=Application
-Categories=System;
+Categories=Terminal;System;
 StartupNotify=false
 Name=XeroLinux Post Installation Toolkit
-Exec=/usr/bin/xero-cli -m
+Exec=xero-cli
 Icon=/usr/share/pixmaps/xerolinux.png
 Comment=A tool for easy Post-Install Actions.

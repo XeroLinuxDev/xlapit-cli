@@ -369,9 +369,9 @@ fn binary_exists(binary: &str) -> bool {
             let path = i.join(binary);
 
             if path.exists() {
-                if args.minimal == false {
-                    piglog::success!("Found '{}' in: {}", binary.bright_yellow().bold(), i.to_string_lossy().bright_green());
-                }
+                // if args.minimal == false {
+                //     piglog::success!("Found '{}' in: {}", binary.bright_yellow().bold(), i.to_string_lossy().bright_green());
+                // }
                 return true;
             }
         }
