@@ -48,8 +48,6 @@ display_options() {
     
     gum style --foreground 7 "${option_number}. Setup Tailscale Incl. fix for XeroLinux."
     ((option_number++))
-    gum style --foreground 7 "${option_number}. DeckLink & StreamDeck Drivers/Tools (AUR)."
-    ((option_number++))
     gum style --foreground 7 "${option_number}. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
     echo
     gum style --foreground 226 ".::: Additional Options :::."
@@ -185,22 +183,20 @@ process_choice() {
         # Map user choice to actual option based on what's visible
         local actual_choice=""
         if ! is_xerolinux; then
-            # On vanilla Arch: 1=gpu, 2=printer, 3=tailscale, 4=decklink, 5=asus
+            # On vanilla Arch: 1=gpu, 2=printer, 3=tailscale, 4=asus
             case $CHOICE in
                 1) actual_choice="gpu" ;;
                 2) actual_choice="printer" ;;
                 3) actual_choice="tailscale" ;;
-                4) actual_choice="decklink" ;;
-                5) actual_choice="asus" ;;
+                4) actual_choice="asus" ;;
                 *) actual_choice="$CHOICE" ;;
             esac
         else
-            # On XeroLinux: 1=gpu, 2=tailscale, 3=decklink, 4=asus (since printer is hidden)
+            # On XeroLinux: 1=gpu, 2=tailscale, 3=asus (since printer is hidden)
             case $CHOICE in
                 1) actual_choice="gpu" ;;
                 2) actual_choice="tailscale" ;;
-                3) actual_choice="decklink" ;;
-                4) actual_choice="asus" ;;
+                3) actual_choice="asus" ;;
                 *) actual_choice="$CHOICE" ;;
             esac
         fi
@@ -219,12 +215,6 @@ process_choice() {
                 gum style --foreground 7 "Installing Tailscale..."
                 bash -c "$(curl -fsSL https://raw.githubusercontent.com/xerolinux/xero-fixes/main/conf/install.sh)"
                 gum style --foreground 7 "Tailscale setup complete!"
-                sleep 3 && clear && exec "$0"
-                ;;
-            decklink)
-                gum style --foreground 7 "Installing DeckLink & StreamDeck..."
-                package_selection_dialog "Decklink DeckMaster StreamDeckUI" "install_aur_packages"
-                gum style --foreground 7 "Installation complete!"
                 sleep 3 && clear && exec "$0"
                 ;;
             asus)
