@@ -48,7 +48,7 @@ display_options() {
   gum style --foreground 226 ".::: Additional Options :::."
   echo
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
-  gum style --foreground 125 "h. Install Gnome Live Wallpaper (Hanabi)."
+  gum style --foreground 50 "h. Install Gnome Live Wallpaper (Hanabi)."
   if ! is_xerolinux; then
     gum style --foreground 200 "x. XeroLinux's Layan Rice (Vanilla KDE)."
   fi
