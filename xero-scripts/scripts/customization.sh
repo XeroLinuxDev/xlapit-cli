@@ -48,6 +48,7 @@ display_options() {
   gum style --foreground 226 ".::: Additional Options :::."
   echo
   gum style --foreground 175 "g. Change Grub Theme (Xero Script)."
+  gum style --foreground 125 "h. Install Gnome Live Wallpaper (Hanabi)."
   if ! is_xerolinux; then
     gum style --foreground 200 "x. XeroLinux's Layan Rice (Vanilla KDE)."
   fi
@@ -222,6 +223,18 @@ process_choice() {
         cd ~/xero-grubs/ && sh install.sh
         echo
         rm -rf ~/xero-grubs/
+        sleep 3
+        clear && exec "$0"
+        ;;
+      h)
+        gum style --foreground 7 "Hanabi Live Wallpaper (Gnome)..."
+        sleep 2
+        echo
+        cd ~ && git clone https://github.com/jeffshee/gnome-ext-hanabi.git -b gnome-48
+        cd ~/gnome-ext-hanabi/ && sh run.sh install
+        echo
+        sudo pacman -S --noconfirm clapper clapper-enhancers libclapper
+        rm -rf ~/gnome-ext-hanabi/
         sleep 3
         clear && exec "$0"
         ;;
