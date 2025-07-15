@@ -55,8 +55,6 @@ display_options() {
   # Only show "(Vanilla Arch)" option if not running XeroLinux
   if ! is_xerolinux; then
     gum style --foreground 7 "${option_number}. Various System Tools (Vanilla Arch)."
-  else
-    gum style --foreground 7 "${option_number}. Various System Tools."
   fi
 }
 
