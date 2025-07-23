@@ -65,8 +65,10 @@ install_firewalld() {
 
 clear_pacman_cache() {
     echo
-    sudo pacman -Scc
-    sleep 2
+    if ! sudo pacman -Scc; then
+        gum style --foreground 196 "Failed to clear pacman cache."
+        sleep 2
+    fi
     main
 }
 
@@ -78,18 +80,35 @@ vm_guest() {
       oracle)
         echo "Installing Virtualbox Guest tools..."
         echo
-        sudo pacman -S --noconfirm --needed virtualbox-guest-utils && reboot
+        if ! sudo pacman -S --noconfirm --needed virtualbox-guest-utils; then
+            gum style --foreground 196 "Failed to install Virtualbox Guest tools."
+            sleep 2
+        else
+            reboot
+        fi
         ;;
       kvm)
         echo "Installing QEmu Guest tools..."
         echo
-        sudo pacman -S --noconfirm --needed qemu-guest-agent spice-vdagent && reboot
+        if ! sudo pacman -S --noconfirm --needed qemu-guest-agent spice-vdagent; then
+            gum style --foreground 196 "Failed to install QEmu Guest tools."
+            sleep 2
+        else
+            reboot
+        fi
         ;;
       vmware)
         echo "Installing VMWare Guest Tools..."
         echo
-        sudo pacman -S --noconfirm --needed xf86-video-vmware open-vm-tools xf86-input-vmmouse
-        sudo systemctl enable --now vmtoolsd.service && reboot
+        if ! sudo pacman -S --noconfirm --needed xf86-video-vmware open-vm-tools xf86-input-vmmouse; then
+            gum style --foreground 196 "Failed to install VMWare Guest tools."
+            sleep 2
+        elif ! sudo systemctl enable --now vmtoolsd.service; then
+            gum style --foreground 196 "Failed to enable vmtoolsd.service."
+            sleep 2
+        else
+            reboot
+        fi
         ;;
       *)
         echo "You are not running in a VM."

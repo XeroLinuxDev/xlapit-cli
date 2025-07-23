@@ -4,13 +4,6 @@ set -e
 # Add this at the start of the script, right after the shebang
 trap 'clear && exec "$0"' INT
 
-SCRIPTS="/usr/share/xero-scripts/"
-
-# Function to detect if running on XeroLinux
-is_xerolinux() {
-    grep -q "XeroLinux" /etc/os-release
-}
-
 # Check if being run from xero-cli
 if [ -z "$AUR_HELPER" ]; then
     echo
@@ -20,6 +13,13 @@ if [ -z "$AUR_HELPER" ]; then
     echo
     exit 1
 fi
+
+SCRIPTS="/usr/share/xero-scripts/"
+
+# Function to detect if running on XeroLinux
+is_xerolinux() {
+    grep -q "XeroLinux" /etc/os-release
+}
 
 # Function to display header
 display_header() {
@@ -61,18 +61,30 @@ display_options() {
 # Function to install packages using pacman
 install_pacman_packages() {
     sudo -K
-    sudo pacman -S --noconfirm --needed "$@"
+    if ! sudo pacman -S --noconfirm --needed "$@"; then
+        gum style --foreground 196 "Failed to install package(s): $*"
+        sleep 2
+        clear && exec "$0"
+    fi
     sudo -K
 }
 
 # Function to install packages using AUR Helper
 install_aur_packages() {
-    $AUR_HELPER -S --noconfirm --needed "$@"
+    if ! $AUR_HELPER -S --noconfirm --needed "$@"; then
+        gum style --foreground 196 "Failed to install AUR package(s): $*"
+        sleep 2
+        clear && exec "$0"
+    fi
 }
 
 # Function to install flatpak packages
 install_flatpak_packages() {
-    flatpak install -y "$@"
+    if ! flatpak install -y "$@"; then
+        gum style --foreground 196 "Failed to install Flatpak package(s): $*"
+        sleep 2
+        clear && exec "$0"
+    fi
 }
 
 # Helper functions to check if a package is installed
@@ -427,7 +439,7 @@ process_choice() {
 
     case $actual_choice in
       libreoffice)
-        sudo pacman -S --noconfirm --needed libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
+        install_pacman_packages libreoffice-fresh hunspell hunspell-en_us ttf-caladea ttf-carlito ttf-dejavu ttf-liberation ttf-linux-libertine-g noto-fonts adobe-source-code-pro-fonts adobe-source-sans-pro-fonts adobe-source-serif-pro-fonts libreoffice-extension-texmaths libreoffice-extension-writer2latex
         echo
         gum style --foreground 7 "##########  Done, Please Reboot !  ##########"
         sleep 3

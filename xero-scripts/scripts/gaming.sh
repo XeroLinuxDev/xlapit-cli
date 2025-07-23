@@ -178,7 +178,11 @@ process_choice() {
         gum style --foreground 7 "Installing Steam + Mangohud + Gamemode + Gamescope..."
         sleep 2
         echo
-        install_gaming_packages steam
+        if ! install_gaming_packages steam; then
+          gum style --foreground 196 "Failed to install Steam and related packages."
+          sleep 2
+          clear && exec "$0"
+        fi
         sleep 3
         echo
         echo "Applying Download Speed Enhancement Patch..."
@@ -188,7 +192,11 @@ process_choice() {
         echo
         echo "Patching VM.Max.MapCount"
         echo
-        echo "vm.max_map_count=2147483642" | sudo tee /etc/sysctl.d/99-sysctl.conf >/dev/null
+        if ! echo "vm.max_map_count=2147483642" | sudo tee /etc/sysctl.d/99-sysctl.conf >/dev/null; then
+          gum style --foreground 196 "Failed to patch VM.Max.MapCount."
+          sleep 2
+          clear && exec "$0"
+        fi
         sleep 3
         gum style --foreground 7 "Steam installation complete!"
         sleep 3
@@ -206,7 +214,16 @@ process_choice() {
         gum style --foreground 7 "Installing LACT GPU OC Utility..."
         sleep 2
         echo
-        install_aur_packages lact && sudo systemctl enable --now lactd
+        if ! install_aur_packages lact; then
+          gum style --foreground 196 "Failed to install LACT."
+          sleep 2
+          clear && exec "$0"
+        fi
+        if ! sudo systemctl enable --now lactd; then
+          gum style --foreground 196 "Failed to enable lactd service."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "LACT GPU OC Utility installation complete!"
         sleep 3
@@ -216,7 +233,11 @@ process_choice() {
         gum style --foreground 7 "Installing Heroic Games Launcher..."
         sleep 2
         echo
-        install_gaming_packages heroic
+        if ! install_gaming_packages heroic; then
+          gum style --foreground 196 "Failed to install Heroic Games Launcher."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "Heroic Games Launcher installation complete!"
         sleep 3
@@ -226,7 +247,11 @@ process_choice() {
         gum style --foreground 7 "Installing Lutris..."
         sleep 2
         echo
-        install_gaming_packages lutris
+        if ! install_gaming_packages lutris; then
+          gum style --foreground 196 "Failed to install Lutris."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "Lutris installation complete!"
         sleep 3
@@ -236,7 +261,11 @@ process_choice() {
         gum style --foreground 7 "Installing Bottles..."
         sleep 2
         echo
-        install_gaming_packages bottles
+        if ! install_gaming_packages bottles; then
+          gum style --foreground 196 "Failed to install Bottles."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "Bottles installation complete!"
         sleep 3
@@ -246,7 +275,11 @@ process_choice() {
         gum style --foreground 7 "Installing ProtonPlus..."
         sleep 2
         echo
-        install_gaming_packages ProtonPlus
+        if ! install_gaming_packages ProtonPlus; then
+          gum style --foreground 196 "Failed to install ProtonPlus."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "ProtonPlus installation complete!"
         sleep 3

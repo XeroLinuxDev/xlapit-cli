@@ -38,7 +38,11 @@ install_aur_packages() {
         gum style --foreground 196 "Error: AUR helper not defined or not found"
         return 1
     fi
-    $AUR_HELPER -S --noconfirm --needed "$@"
+    if ! $AUR_HELPER -S --noconfirm --needed "$@"; then
+        gum style --foreground 196 "Failed to install AUR package(s): $*"
+        sleep 2
+        clear && exec "$0"
+    fi
 }
 
 # Function to display the menu

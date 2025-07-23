@@ -102,32 +102,35 @@ process_choice() {
         echo
         if ! command -v fastfetch &> /dev/null; then
           sudo -K
-          sudo pacman -S --noconfirm --needed fastfetch imagemagick ffmpeg ffmpegthumbnailer ffmpegthumbs qt6-multimedia-ffmpeg
+          if ! sudo pacman -S --noconfirm --needed fastfetch imagemagick ffmpeg ffmpegthumbnailer ffmpegthumbs qt6-multimedia-ffmpeg; then
+            gum style --foreground 196 "Failed to install Fastfetch or dependencies."
+            sleep 2
+            clear && exec "$0"
+          fi
           sudo -K
         fi
-        
-        # Create config directory if it doesn't exist
         mkdir -p "$HOME/.config/fastfetch"
-        
-        # Only generate config if it doesn't exist
         if [ ! -f "$HOME/.config/fastfetch/config.jsonc" ]; then
-          fastfetch --gen-config
+          if ! fastfetch --gen-config; then
+            gum style --foreground 196 "Failed to generate Fastfetch config."
+            sleep 2
+            clear && exec "$0"
+          fi
         fi
-        
-        # Change to the ~/.config/fastfetch directory
         cd "$HOME/.config/fastfetch"
-
-        # Rename the existing config file by appending .bk to its name
         mv config.jsonc{,.bk}
-
-        # Download the new image and config file
-        wget -qO Arch.png https://raw.githubusercontent.com/xerolinux/xero-fixes/main/xero.png
-        wget -q https://raw.githubusercontent.com/xerolinux/xero-layan-git/main/Configs/Home/.config/fastfetch/config.jsonc
-
-        # Update the config file to use the new image name
+        if ! wget -qO Arch.png https://raw.githubusercontent.com/xerolinux/xero-fixes/main/xero.png; then
+          gum style --foreground 196 "Failed to download Arch.png."
+          sleep 2
+          clear && exec "$0"
+        fi
+        if ! wget -q https://raw.githubusercontent.com/xerolinux/xero-layan-git/main/Configs/Home/.config/fastfetch/config.jsonc; then
+          gum style --foreground 196 "Failed to download config.jsonc."
+          sleep 2
+          clear && exec "$0"
+        fi
         sed -i 's/xero.png/Arch.png/' $HOME/.config/fastfetch/config.jsonc
         sleep 2
-        echo
         add_fastfetch() {
           if ! grep -Fxq 'fastfetch' "$HOME/.bashrc"; then
             echo 'fastfetch' >> "$HOME/.bashrc"
@@ -136,10 +139,7 @@ process_choice() {
             echo "fastfetch is already set to run on Terminal launch."
           fi
         }
-
-        # Prompt the user
         read -p "Do you want to enable fastfetch to run on Terminal launch? (y/n): " response
-
         case "$response" in
           [yY])
             add_fastfetch
@@ -160,18 +160,27 @@ process_choice() {
         gum style --foreground 7 "Setting up ZSH with OMP & OMZ Plugins..."
         sleep 2
         echo
-        # Check if zsh is already installed
         if ! command -v zsh &> /dev/null; then
           sudo -K
-          sudo pacman -S --needed --noconfirm zsh grml-zsh-config fastfetch
+          if ! sudo pacman -S --needed --noconfirm zsh grml-zsh-config fastfetch; then
+            gum style --foreground 196 "Failed to install ZSH or dependencies."
+            sleep 2
+            clear && exec "$0"
+          fi
           sudo -K
         fi
-        
-        # Check if oh-my-zsh is already installed
         if [ ! -d "$HOME/.oh-my-zsh" ]; then
-          sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+          if ! sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended; then
+            gum style --foreground 196 "Failed to install Oh-My-Zsh."
+            sleep 2
+            clear && exec "$0"
+          fi
         fi
-        $AUR_HELPER -S --noconfirm --needed pacseek ttf-meslo-nerd siji-git otf-unifont bdf-unifont noto-color-emoji-fontconfig xorg-fonts-misc ttf-dejavu ttf-meslo-nerd-font-powerlevel10k noto-fonts-emoji powerline-fonts oh-my-posh-bin
+        if ! $AUR_HELPER -S --noconfirm --needed pacseek ttf-meslo-nerd siji-git otf-unifont bdf-unifont noto-color-emoji-fontconfig xorg-fonts-misc ttf-dejavu ttf-meslo-nerd-font-powerlevel10k noto-fonts-emoji powerline-fonts oh-my-posh-bin; then
+          gum style --foreground 196 "Failed to install ZSH plugins or fonts."
+          sleep 2
+          clear && exec "$0"
+        fi
         git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
         git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
@@ -180,13 +189,14 @@ process_choice() {
         echo
         echo "Applying Oh-My-Posh to ZSH"
         echo
-        # Check if the folder exists, if not create it and download the file
         if [ ! -d "$HOME/.config/ohmyposh" ]; then
           mkdir -p "$HOME/.config/ohmyposh"
         fi
-        curl -o "$HOME/.config/ohmyposh/xero.omp.json" https://raw.githubusercontent.com/XeroLinuxDev/desktop-config/refs/heads/main/etc/skel/.config/ohmyposh/xero.omp.json
-
-        # Check if the line exists in ~/.zshrc, if not add it
+        if ! curl -o "$HOME/.config/ohmyposh/xero.omp.json" https://raw.githubusercontent.com/XeroLinuxDev/desktop-config/refs/heads/main/etc/skel/.config/ohmyposh/xero.omp.json; then
+          gum style --foreground 196 "Failed to download Oh-My-Posh config."
+          sleep 2
+          clear && exec "$0"
+        fi
         if ! grep -Fxq 'eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/xero.omp.json)"' "$HOME/.zshrc"; then
           echo '' >> "$HOME/.zshrc"
           echo 'eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/xero.omp.json)"' >> "$HOME/.zshrc"
@@ -195,8 +205,11 @@ process_choice() {
         echo
         echo "Switching to ZSH..."
         echo
-        sudo chsh $USER -s /bin/zsh
-        # Check if the current terminal is Konsole and if KDE Plasma is running
+        if ! sudo chsh $USER -s /bin/zsh; then
+          gum style --foreground 196 "Failed to change shell to ZSH."
+          sleep 2
+          clear && exec "$0"
+        fi
         if [[ "$KONSOLE_VERSION" && "$XDG_CURRENT_DESKTOP" == "KDE" ]]; then
             sed -i 's|Command=/bin/bash|Command=/bin/zsh|' "$HOME/.local/share/konsole/XeroLinux.profile"
         fi
@@ -209,7 +222,11 @@ process_choice() {
         gum style --foreground 7 "Installing Save Desktop Tool..."
         sleep 2
         echo
-        flatpak install -y io.github.vikdevelop.SaveDesktop
+        if ! flatpak install -y io.github.vikdevelop.SaveDesktop; then
+          gum style --foreground 196 "Failed to install Save Desktop Tool."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "All Done, Enjoy..."
         sleep 3
@@ -233,7 +250,11 @@ process_choice() {
         cd ~ && git clone https://github.com/jeffshee/gnome-ext-hanabi.git -b gnome-48
         cd ~/gnome-ext-hanabi/ && sh run.sh install
         echo
-        sudo pacman -S --noconfirm clapper clapper-enhancers libclapper
+        if ! sudo pacman -S --noconfirm clapper clapper-enhancers libclapper; then
+          gum style --foreground 196 "Failed to install Hanabi dependencies."
+          sleep 2
+          clear && exec "$0"
+        fi
         rm -rf ~/gnome-ext-hanabi/
         sleep 3
         clear && exec "$0"
@@ -247,7 +268,6 @@ process_choice() {
         echo
         gum style --foreground 200 "XeroLinux KDE Rice setup complete!"
         sleep 3
-        # Countdown from 15 to 1
         for i in {15..1}; do
             dialog --infobox "Rebooting in $i seconds..." 3 30
             sleep 1
@@ -259,7 +279,11 @@ process_choice() {
         gum style --foreground 7 "Downloading Extra KDE Wallpapers..."
         sleep 2
         echo
-        sudo pacman -S --noconfirm --needed kde-wallpapers-extra
+        if ! sudo pacman -S --noconfirm --needed kde-wallpapers-extra; then
+          gum style --foreground 196 "Failed to install KDE Wallpapers Extra."
+          sleep 2
+          clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "All done, enjoy !"
         sleep 3
@@ -288,7 +312,11 @@ process_choice() {
         gum style --foreground 7 "Grabbing Packages..."
         sleep 2
         echo
-        $AUR_HELPER -S --noconfirm --needed ptyxis pacseek btop gparted flatseal awesome-terminal-fonts extension-manager gnome-shell-extension-arc-menu gnome-shell-extension-caffeine gnome-shell-extension-gsconnect gnome-shell-extension-arch-update gnome-shell-extension-blur-my-shell gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock gnome-shell-extension-weather-oclock chafa nautilus-share nautilus-compare nautilus-admin-gtk4 nautilus-image-converter libappindicator-gtk3 tela-circle-icon-theme-purple kvantum-theme-libadwaita-git qt5ct qt6ct kvantum fastfetch adw-gtk-theme oh-my-posh-bin ttf-fira-code guake desktop-config-gnome
+        if ! $AUR_HELPER -S --noconfirm --needed ptyxis pacseek btop gparted flatseal awesome-terminal-fonts extension-manager gnome-shell-extension-arc-menu gnome-shell-extension-caffeine gnome-shell-extension-gsconnect gnome-shell-extension-arch-update gnome-shell-extension-blur-my-shell gnome-shell-extension-appindicator gnome-shell-extension-dash-to-dock gnome-shell-extension-weather-oclock chafa nautilus-share nautilus-compare nautilus-admin-gtk4 nautilus-image-converter libappindicator-gtk3 tela-circle-icon-theme-purple kvantum-theme-libadwaita-git qt5ct qt6ct kvantum fastfetch adw-gtk-theme oh-my-posh-bin ttf-fira-code guake desktop-config-gnome; then
+          gum style --foreground 196 "Failed to install Gnome settings packages."
+          sleep 2
+          clear && exec "$0"
+        fi
         sleep 3
         echo
         gum style --foreground 7 "Applying Xero Gnome Settings..."
@@ -317,13 +345,10 @@ process_choice() {
       r)
         gum style --foreground 33 "Rebooting System..."
         sleep 3
-        # Countdown from 5 to 1
         for i in {5..1}; do
             dialog --infobox "Rebooting in $i seconds..." 3 30
             sleep 1
         done
-
-        # Reboot after the countdown
         reboot
         sleep 3
         ;;

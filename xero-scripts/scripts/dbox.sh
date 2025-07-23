@@ -63,20 +63,40 @@ process_choice() {
         sleep 2
         echo
         sudo -K
-        sudo pacman -S --noconfirm --needed docker docker-compose docker-buildx || handle_error
+        if ! sudo pacman -S --noconfirm --needed docker docker-compose docker-buildx; then
+            gum style --foreground 196 "Failed to install Docker packages."
+            sleep 2
+            clear && exec "$0"
+        fi
         sudo -K
-        $AUR_HELPER -S --noconfirm --needed lazydocker-bin || handle_error
-        # Prompt the user
+        if ! $AUR_HELPER -S --noconfirm --needed lazydocker-bin; then
+            gum style --foreground 196 "Failed to install lazydocker-bin."
+            sleep 2
+            clear && exec "$0"
+        fi
         echo
-        gum confirm "Do you want to install Podman Desktop ?" && \
-            flatpak install io.podman_desktop.PodmanDesktop -y || \
+        if gum confirm "Do you want to install Podman Desktop ?"; then
+            if ! flatpak install io.podman_desktop.PodmanDesktop -y; then
+                gum style --foreground 196 "Failed to install Podman Desktop."
+                sleep 2
+            fi
+        else
             echo "Podman Desktop installation skipped."
+        fi
         sleep 2
         echo
         sudo -K
-        sudo systemctl enable --now docker || handle_error
+        if ! sudo systemctl enable --now docker; then
+            gum style --foreground 196 "Failed to enable Docker service."
+            sleep 2
+            clear && exec "$0"
+        fi
         sudo -K
-        sudo usermod -aG docker "$USER" || handle_error
+        if ! sudo usermod -aG docker "$USER"; then
+            gum style --foreground 196 "Failed to add user to docker group."
+            sleep 2
+            clear && exec "$0"
+        fi
         sudo -K
         sleep 2
         gum style --foreground 7 "Docker setup complete!"
@@ -84,32 +104,30 @@ process_choice() {
         clear && exec "$0"
         ;;
       2)
-        # Define error handling function
-        handle_error() {
-            echo "An error occurred. Exiting..."
-            exit 1
-        }
-
         gum style --foreground 7 "Installing & Setting up Podman..."
         sleep 2
         echo
-        # Install Podman and related packages
         sudo -K
-        sudo pacman -S --noconfirm --needed podman podman-docker || handle_error
-        
-        # Enable and start required services
+        if ! sudo pacman -S --noconfirm --needed podman podman-docker; then
+            gum style --foreground 196 "Failed to install Podman packages."
+            sleep 2
+            clear && exec "$0"
+        fi
         sudo -K
-        sudo systemctl enable --now podman.socket || handle_error
-        
-        # Note: Removed usermod command as Podman doesn't require a special group
-        # on most systems for rootless containers
-        
-        # Install Podman Desktop from Flathub
+        if ! sudo systemctl enable --now podman.socket; then
+            gum style --foreground 196 "Failed to enable Podman socket."
+            sleep 2
+            clear && exec "$0"
+        fi
         echo
-        gum confirm "Do you want to install Podman Desktop?" && \
-            flatpak install flathub io.podman_desktop.PodmanDesktop -y || \
+        if gum confirm "Do you want to install Podman Desktop?"; then
+            if ! flatpak install flathub io.podman_desktop.PodmanDesktop -y; then
+                gum style --foreground 196 "Failed to install Podman Desktop."
+                sleep 2
+            fi
+        else
             echo "Podman Desktop installation skipped."
-        
+        fi
         sleep 2
         gum style --foreground 7 "Podman setup complete!"
         sleep 3
@@ -120,9 +138,17 @@ process_choice() {
         sleep 2
         echo
         sudo -K
-        sudo pacman -S --noconfirm --needed distrobox || handle_error
+        if ! sudo pacman -S --noconfirm --needed distrobox; then
+            gum style --foreground 196 "Failed to install Distrobox."
+            sleep 2
+            clear && exec "$0"
+        fi
         sudo -K
-        flatpak install -y io.github.dvlv.boxbuddyrs
+        if ! flatpak install -y io.github.dvlv.boxbuddyrs; then
+            gum style --foreground 196 "Failed to install BoxBuddyRs."
+            sleep 2
+            clear && exec "$0"
+        fi
         echo
         gum style --foreground 7 "Distrobox installation complete!"
         sleep 3
