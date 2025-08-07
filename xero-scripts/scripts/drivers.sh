@@ -83,7 +83,7 @@ prompt_user() {
         case $gpu_type in
             amd)
                 sudo -K
-                sudo pacman -S --needed --noconfirm vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk
+                sudo pacman -S --needed --noconfirm linux-headers vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk vulkan-mesa-layers lib32-vulkan-mesa-layers
                 sudo -K
                 read -rp "Will you be using DaVinci Resolve and/or Machine Learning? (y/n): " davinci
                 if [[ $davinci =~ ^[Yy](es)?$ ]]; then
@@ -91,7 +91,7 @@ prompt_user() {
                 fi
                 ;;
             intel)
-                sudo pacman -S --needed --noconfirm vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
+                sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
                 ;;
             nvidia)
                 read -rp "Closed-Source (Most) or Open-Kernel Modules (Turing+) ? (c/o): " nvidia_series

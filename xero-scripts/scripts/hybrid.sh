@@ -33,7 +33,7 @@ install_nvidia_intel() {
     else
         sudo pacman -S --needed --noconfirm linux-headers nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     fi
-    sudo pacman -S --needed --noconfirm vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
+    sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
 
     # Add nvidia-drm.modeset=1 to GRUB if not present
     if ! grep -q 'nvidia-drm.modeset=1' /etc/default/grub; then
@@ -59,7 +59,7 @@ install_nvidia_amd() {
     else
         sudo pacman -S --needed --noconfirm linux-headers nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau
     fi
-    sudo pacman -S --needed --noconfirm vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk
+    sudo pacman -S --needed --noconfirm linux-headers vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader linux-firmware-amdgpu linux-firmware-radeon amdvlk lib32-amdvlk vulkan-mesa-layers lib32-vulkan-mesa-layers
 
     # Add nvidia-drm.modeset=1 to GRUB if not present
     if ! grep -q 'nvidia-drm.modeset=1' /etc/default/grub; then
