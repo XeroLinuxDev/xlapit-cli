@@ -91,7 +91,7 @@ prompt_user() {
                 fi
                 ;;
             intel)
-                sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
+                sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib linux-firmware-intel
                 ;;
             nvidia)
                 read -rp "Closed-Source (Most) or Open-Kernel Modules (Turing+) ? (c/o): " nvidia_series

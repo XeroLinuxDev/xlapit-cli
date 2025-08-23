@@ -49,8 +49,8 @@ display_options() {
   gum style --foreground 7 "${option_number}. Virtualization Tools."
   ((option_number++))
   gum style --foreground 7 "${option_number}. Video Tools & Software."
-  ((option_number++))
-  gum style --foreground 7 "${option_number}. DaVinci Resolve (Free/Studio)."
+#   ((option_number++))
+#   gum style --foreground 7 "${option_number}. DaVinci Resolve (Free/Studio)."
   ((option_number++))
   # Only show "(Vanilla Arch)" option if not running XeroLinux
   if ! is_xerolinux; then
