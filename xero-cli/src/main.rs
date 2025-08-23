@@ -186,9 +186,8 @@ fn main() -> std::process::ExitCode {
             Some(helper) => {
                 piglog::info!("AUR helper : {} / Distro : {}", helper.bright_green().bold(), distro_name.magenta().bold());
                 println!("         App/TUI Build Version : {}", version_str.split_whitespace().last().unwrap_or("").bright_yellow());
-                println!("[Creds]: ");
-                println!("         {} - Maintenance.", "tonekneeo".green().bold());
-                println!("         {}     - Testing.", "SMOKΞ".blue().bold());
+                println!("");
+                println!("[Creds]: {} - Maintenance.", "tonekneeo".yellow().bold());
                 println!("");
             },
             None => return std::process::ExitCode::FAILURE,
