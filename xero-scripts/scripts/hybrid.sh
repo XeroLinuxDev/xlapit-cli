@@ -33,7 +33,7 @@ install_nvidia_intel() {
     else
         sudo pacman -S --needed --noconfirm linux-headers nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau linux-firmware-nvidia
     fi
-    sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib linux-firmware-intel
+    sudo pacman -S --needed --noconfirm linux-headers vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader intel-media-driver intel-gmmlib onevpl-intel-gpu gstreamer-vaapi intel-gmmlib
 
     # Add nvidia-drm.modeset=1 to GRUB if not present
     if ! grep -q 'nvidia-drm.modeset=1' /etc/default/grub; then
