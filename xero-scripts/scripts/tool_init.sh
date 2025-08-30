@@ -245,9 +245,9 @@ package_selection_dialog() {
                     clear
                     flatpak install -y com.github.tchx84.Flatseal
                     ;;
-                EasyFlatpak)
+                Bazaar)
                     clear
-                    flatpak install -y org.dupot.easyflatpak
+                    flatpak install -y io.github.kolunmi.Bazaar
                     ;;
                 *)
                     echo "Unknown package: $PACKAGE"
@@ -277,7 +277,7 @@ install_gui_package_managers() {
   ! is_aur_installed bauh && gui_pkg_options+=("BauhGUI" "Bauh GUI Package Manager" OFF)
   ! is_flatpak_installed io.github.flattool.Warehouse && gui_pkg_options+=("Warehouse" "Flatpak Package Manager" OFF)
   ! is_flatpak_installed com.github.tchx84.Flatseal && gui_pkg_options+=("Flatseal" "Flatpak Permission Manager" OFF)
-  ! is_flatpak_installed org.dupot.easyflatpak && gui_pkg_options+=("EasyFlatpak" "Easy Flatpak Manager" OFF)
+  ! is_flatpak_installed io.github.kolunmi.Bazaar && gui_pkg_options+=("Bazaar" "Flatpak GUI Store" OFF)
   
   if [ ${#gui_pkg_options[@]} -eq 0 ]; then
     gum style --foreground 7 "All GUI package managers are already installed."
