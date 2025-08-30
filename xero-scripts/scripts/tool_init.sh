@@ -16,7 +16,7 @@ fi
 
 # Function to detect if running on XeroLinux
 is_xerolinux() {
-    grep -q "XeroLinux" /etc/os-release
+    grep -q "XeroLinux" /etc/lsb-release
 }
 
 # Helper functions to check if a package is installed

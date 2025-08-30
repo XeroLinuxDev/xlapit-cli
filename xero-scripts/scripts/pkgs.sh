@@ -18,7 +18,7 @@ SCRIPTS="/usr/share/xero-scripts/"
 
 # Function to detect if running on XeroLinux
 is_xerolinux() {
-    grep -q "XeroLinux" /etc/os-release
+    grep -q "XeroLinux" /etc/lsb-release
 }
 
 # Function to display header
