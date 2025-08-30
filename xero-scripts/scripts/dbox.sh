@@ -69,11 +69,10 @@ process_choice() {
             clear && exec "$0"
         fi
         sudo -K
-        if ! $AUR_HELPER -S --noconfirm --needed lazydocker-bin; then
-            gum style --foreground 196 "Failed to install lazydocker-bin."
-            sleep 2
-            clear && exec "$0"
-        fi
+        if ! sudo systemctl enable --now docker.service && sudo groupadd docker && sudo usermod -aG docker $USER; then
+        gum style --foreground 196 "Failed to enable Docker service"
+        exit 1
+    fi
         echo
         if gum confirm "Do you want to install Podman Desktop ?"; then
             if ! flatpak install io.podman_desktop.PodmanDesktop -y; then

@@ -24,7 +24,7 @@ display_menu() {
     echo
     gum style --foreground 40 ".::: Main Options :::."
     echo
-    gum style --foreground 7 "1. Install & Activate Firewalld."
+    gum style --foreground 7 "1. Install & Activate PortMaster"
     gum style --foreground 7 "2. Clear Pacman Cache (Free Space)."
     gum style --foreground 7 "3. Unlock Pacman DB (In case of DB error)."
     gum style --foreground 7 "4. Activate v4l2loopback for OBS-VirtualCam."
@@ -46,15 +46,11 @@ display_menu() {
 
 install_firewalld() {
     echo
-    gum style --foreground 7 "########## Installing Firewalld ##########"
+    gum style --foreground 7 "########## Installing PortMaster ##########"
     echo
     sudo -K
-    if ! sudo pacman -S --needed --noconfirm firewalld python-pyqt5 python-capng; then
+    if ! $AUR_HELPER -S --needed --noconfirm portmaster-bin; then
         gum style --foreground 196 "Failed to install packages"
-        exit 1
-    fi
-    if ! sudo systemctl enable --now firewalld.service; then
-        gum style --foreground 196 "Failed to enable firewalld service"
         exit 1
     fi
     echo
