@@ -37,7 +37,7 @@ display_options() {
     # Dynamic numbering for visible options
     local option_number=1
     
-    gum style --foreground 85 "${option_number}. GPU Drivers (Intel/AMD/nVidia)."
+    gum style --foreground 85 "${option_number}. GPU Drivers/Codecs (Intel/AMD/nVidia)."
     ((option_number++))
     
     # Only show "(Vanilla Arch)" option if not running XeroLinux
@@ -87,7 +87,7 @@ prompt_user() {
                 sudo -K
                 read -rp "Will you be using DaVinci Resolve and/or Machine Learning? (y/n): " davinci
                 if [[ $davinci =~ ^[Yy](es)?$ ]]; then
-                    sudo pacman -S --needed --noconfirm mesa lib32-mesa rocm-opencl-runtime rocm-hip-runtime
+                    sudo pacman -S --needed --noconfirm rocm-opencl-runtime rocm-hip-runtime
                 fi
                 ;;
             intel)
