@@ -69,10 +69,11 @@ display_menu() {
   gum style --foreground 226 ".::: Additional Options :::."
   echo
   gum style --foreground 7 "u. Update System (Simple/Extended/Adv.)."
-  gum style --foreground 7 "i. Download latest (official) Arch Linux ISO."
   gum style --foreground 7 "f. Enable Fingerprint Auth. Service (KDE Only)."
   gum style --foreground 7 "a. Install Multi-A.I Model Chat G.U.I (Local/LMStudio)."
   gum style --foreground 7 "p. Change ParallelDownloads value for faster installs."
+  echo
+  gum style --foreground 156 "i. Download latest (official) Arch Linux ISO (LeaseWeb)."
 }
 
 # Function to change parallel downloads

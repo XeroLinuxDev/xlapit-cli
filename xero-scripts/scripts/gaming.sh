@@ -146,13 +146,13 @@ install_gaming_packages() {
       sudo -K
       ;;
     bottles)
-      flatpak install -y com.usebottles.bottles org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/24.08
+      flatpak install -y com.usebottles.bottles org.freedesktop.Platform.VulkanLayer.gamescope org.freedesktop.Platform.VulkanLayer.MangoHud
       ;;
     heroic)
-      flatpak install -y com.heroicgameslauncher.hgl org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/24.08
+      flatpak install -y com.heroicgameslauncher.hgl org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud
       ;;
     lutris)
-      flatpak install -y net.lutris.Lutris org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/24.08
+      flatpak install -y net.lutris.Lutris org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/24.08 org.freedesktop.Platform.VulkanLayer.MangoHud
       ;;
     emulators)
       flatpak install -y org.libretro.RetroArch org.ppsspp.PPSSPP org.DolphinEmu.dolphin-emu org.flycast.Flycast org.pcsx2.PCSX2 flathub net.rpcs3.RPCS3

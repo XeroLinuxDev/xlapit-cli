@@ -223,10 +223,6 @@ package_selection_dialog() {
                     clear
                     install_pacman_packages meld
                     ;;
-                Cursor)
-                    clear
-                    install_aur_packages cursor-extracted
-                    ;;
                 Emacs)
                     clear
                     echo "Please select which version you want to install :"
@@ -257,10 +253,6 @@ package_selection_dialog() {
                 LazyGit)
                     clear
                     install_pacman_packages lazygit
-                    ;;
-                Warp)
-                    clear
-                    install_aur_packages warp-terminal-bin
                     ;;
                 IntelliJ)
                     clear
@@ -486,7 +478,6 @@ process_choice() {
         ! is_flatpak_installed io.github.shiftey.Desktop && dev_options+=("Github" "GitHub Desktop application" OFF)
         ! is_aur_installed vscodium-bin && dev_options+=("VSCodium" "Telemetry-less code editing" OFF)
         ! is_pacman_installed meld && dev_options+=("Meld" "Visual diff and merge tool" OFF)
-        ! is_aur_installed warp-terminal-bin && dev_options+=("Warp" "The intelligent terminal with AI" OFF)
         ! is_flatpak_installed com.jetbrains.IntelliJ-IDEA-Community && dev_options+=("IntelliJ" "IntelliJ IDEA IDE for Java" OFF)
         if [ ${#dev_options[@]} -eq 0 ]; then
           gum style --foreground 7 "All development tools are already installed."
