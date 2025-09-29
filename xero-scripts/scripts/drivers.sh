@@ -49,10 +49,6 @@ display_options() {
     gum style --foreground 7 "${option_number}. Setup Tailscale Incl. fix for XeroLinux."
     ((option_number++))
     gum style --foreground 7 "${option_number}. ASUS ROG Laptop Tools by ASUS-Linux team (AUR)."
-    echo
-    gum style --foreground 226 ".::: Additional Options :::."
-    echo
-    gum style --foreground 196 "k. Install Arch Kernel Manager Tool (XeroLinux Repo)."
 }
 
 # Function to prompt user for GPU drivers
