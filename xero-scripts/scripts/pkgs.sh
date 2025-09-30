@@ -126,8 +126,6 @@ install_browsers() {
 install_devtools() {
   local opts=()
   ! is_flatpak_installed com.google.AndroidStudio && opts+=("AndroidStudio" "Android IDE" OFF)
-  ! is_pacman_installed neovide && opts+=("neoVide" "Neovim GUI" OFF)
-  ! is_pacman_installed emacs && opts+=("Emacs" "Lisp-based editor" OFF)
   ! is_pacman_installed lazygit && opts+=("LazyGit" "Git TUI" OFF)
   ! is_pacman_installed hugo && opts+=("Hugo" "Static Site Generator" OFF)
   ! is_flatpak_installed io.github.shiftey.Desktop && opts+=("Github" "GitHub Desktop" OFF)
@@ -141,8 +139,6 @@ install_devtools() {
   for pkg in $PACKAGES; do
     case $pkg in
       AndroidStudio) install_flatpak_packages com.google.AndroidStudio ;;
-      neoVide) install_pacman_packages tmux neovide neovim-plug python-pynvim ;;
-      Emacs) install_pacman_packages emacs ttf-ubuntu-font-family ttf-jetbrains-mono ;;
       LazyGit) install_pacman_packages lazygit ;;
       Hugo) install_pacman_packages hugo ;;
       Github) install_flatpak_packages io.github.shiftey.Desktop ;;
