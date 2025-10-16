@@ -86,7 +86,7 @@ prompt_user() {
         sudo pacman -S --needed --noconfirm \
           linux-headers vulkan-radeon lib32-vulkan-radeon \
           vulkan-icd-loader lib32-vulkan-icd-loader \
-          linux-firmware-radeon amdvlk lib32-amdvlk \
+          linux-firmware-radeon \
           vulkan-mesa-layers lib32-vulkan-mesa-layers
         sudo -K
         read -rp "Using DaVinci Resolve / ML tools? (y/n): " davinci
