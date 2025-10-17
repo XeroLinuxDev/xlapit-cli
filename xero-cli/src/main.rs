@@ -301,7 +301,7 @@ fn get_distro_name() -> String {
 }
 
 fn select_aur_helper(aur_helper: &str) {
-    let aur_helper_with_flags = format!("{} --mflags --skipreview", aur_helper);
+    let aur_helper_with_flags = format!("{}", aur_helper);
     std::env::set_var("AUR_HELPER", aur_helper_with_flags);
 }
 
