@@ -34,6 +34,22 @@ install_aur_packages() {
   "$AUR_HELPER" -S --noconfirm --needed "${pkgs[@]}"
 }
 
+warn_nvidia_closed_removed() {
+  echo
+  gum style --border double --align center --width 84 --margin "1 2" --padding "1 2" \
+    --border-foreground 196 \
+    "$(gum style --bold --foreground 196 '⚠️  IMPORTANT NVIDIA NOTICE  ⚠️')" \
+    "" \
+    "$(gum style --bold --foreground 15 'NVIDIA 900 & 1000 series (Maxwell/Pascal) are NO LONGER supported by NVIDIA proprietary drivers.')" \
+    "" \
+    "$(gum style --foreground 15 'Only the Open NVIDIA kernel module is supported for Turing/RTX+ (nvidia-open-dkms).')" \
+    "" \
+    "$(gum style --foreground 40 'Supported:     ' )$(gum style --bold --foreground 40 'nvidia-open-dkms  (Turing/RTX+)')" \
+    "$(gum style --foreground 196 'Not supported:  ' )$(gum style --bold --foreground 196 'nvidia-dkms  (removed / unavailable)')"
+  echo
+  read -rp "Press Enter to continue... " _
+}
+
 # --- UI ---
 
 display_header() {
@@ -47,9 +63,9 @@ display_header() {
 display_options() {
   gum style --foreground 40 ".::: Main Options :::."
   echo
-  gum style --foreground 85 "1. GPU Drivers/Codecs (Intel/AMD/NVIDIA)"
-  gum style --foreground 7  "2. Setup Tailscale (incl. XeroLinux fix)"
-  gum style --foreground 7  "3. ASUS ROG Laptop Tools (ASUS-Linux / AUR)"
+  gum style --foreground 85 "1. GPU Drivers/Codecs (Intel/AMD/NVIDIA-OPEN)"
+  gum style --foreground 7  "2. Setup Tailscale (incl. XeroLinux Patch/fix)"
+  gum style --foreground 7  "3. ASUS ROG Laptop Drivers & Tools (ASUS-Linux / AUR)"
 }
 
 # --- GPU Setup ---
@@ -102,14 +118,26 @@ prompt_user() {
         ;;
 
       nvidia)
-        read -rp "Closed-source (c) or Open (o, Turing+)? (c/o): " nvidia_series
-        nvidia_series=${nvidia_series,,}
         local pkg_list="linux-headers nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader egl-wayland opencl-nvidia lib32-opencl-nvidia libvdpau-va-gl libvdpau linux-firmware-nvidia"
-        case $nvidia_series in
-          c) sudo pacman -S --needed --noconfirm nvidia-dkms $pkg_list ;;
-          o) sudo pacman -S --needed --noconfirm nvidia-open-dkms $pkg_list ;;
-          *) gum style --foreground 196 "Invalid option."; return 1 ;;
-        esac
+
+        # nvidia-dkms removed/unavailable: only nvidia-open-dkms is supported going forward.
+        # Still accept "c" input so users get a clear warning instead of a failed install.
+        while true; do
+          read -rp "NVIDIA Driver: Open (o, Turing/RTX+) only. Type 'o' to install (or 'p' for proprietary): " nvidia_series
+          nvidia_series=${nvidia_series,,}
+          case "$nvidia_series" in
+            o)
+              sudo pacman -S --needed --noconfirm nvidia-open-dkms $pkg_list
+              break
+              ;;
+            p)
+              warn_nvidia_closed_removed
+              ;;
+            *)
+              gum style --foreground 196 "Invalid option. Enter 'o' (or 'c' to read the notice)."
+              ;;
+          esac
+        done
 
         # --- GRUB tweak ---
         if [[ -f /etc/default/grub ]] && ! grep -q "nvidia-drm.modeset=1" /etc/default/grub; then
